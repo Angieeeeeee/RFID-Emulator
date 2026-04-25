@@ -1,7 +1,7 @@
 # FIXED
 
 main.obj: ../main.c
-main.obj: ../tm4c123gh6pm.h
+main.obj: ../clock.h
 main.obj: ../display_lib.h
 main.obj: /Applications/ti/ccs1280/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stdint.h
 main.obj: /Applications/ti/ccs1280/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/_ti_config.h
@@ -13,10 +13,14 @@ main.obj: /Applications/ti/ccs1280/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/incl
 main.obj: /Applications/ti/ccs1280/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/machine/_types.h
 main.obj: /Applications/ti/ccs1280/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/machine/_stdint.h
 main.obj: /Applications/ti/ccs1280/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/sys/_stdint.h
+main.obj: ../gpio.h
+main.obj: /Applications/ti/ccs1280/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stdbool.h
+main.obj: ../tm4c123gh6pm.h
+main.obj: ../wait.h
 
 ../main.c:
 
-../tm4c123gh6pm.h:
+../clock.h:
 
 ../display_lib.h:
 
@@ -39,4 +43,12 @@ main.obj: /Applications/ti/ccs1280/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/incl
 /Applications/ti/ccs1280/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/machine/_stdint.h:
 
 /Applications/ti/ccs1280/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/sys/_stdint.h:
+
+../gpio.h:
+
+/Applications/ti/ccs1280/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stdbool.h:
+
+../tm4c123gh6pm.h:
+
+../wait.h:
 

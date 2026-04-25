@@ -8,9 +8,12 @@ GEN_OPTS__FLAG :=
 GEN_CMDS__FLAG := 
 
 ORDERED_OBJS += \
+"./clock.obj" \
 "./display_lib.obj" \
+"./gpio.obj" \
 "./main.obj" \
 "./tm4c123gh6pm_startup_ccs.obj" \
+"./wait.obj" \
 "../tm4c123gh6pm.cmd" \
 $(GEN_CMDS__FLAG) \
 -llibc.a \
@@ -141,8 +144,9 @@ COPIER_PROJ.out: $(OBJS) $(CMD_SRCS) $(GEN_CMDS)
 # Other Targets
 clean:
 	-$(RM) $(EXE_OUTPUTS__QUOTED)
-	-$(RM) "display_lib.obj" "main.obj" "tm4c123gh6pm_startup_ccs.obj" 
-	-$(RM) "display_lib.d" "main.d" "tm4c123gh6pm_startup_ccs.d" 
+	-$(RM) "clock.obj" "display_lib.obj" "gpio.obj" "main.obj" "tm4c123gh6pm_startup_ccs.obj" "wait.obj" 
+	-$(RM) "clock.d" "display_lib.d" "gpio.d" "main.d" "tm4c123gh6pm_startup_ccs.d" 
+	-$(RM) "wait.d" 
 	-@echo 'Finished clean'
 	-@echo ' '
 
