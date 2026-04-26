@@ -1216,10 +1216,10 @@ void ST7735_OutUDec(uint32_t n){
 // Requires 2 bytes of transmission
 // Input: m new rotation value (0 to 3)
 // Output: none
-void ST7735_SetRotation(uint8_t m) {
 
+void ST7735_SetRotation(uint8_t m) {
   writecommand(ST7735_MADCTL);
-  Rotation = m % 4; // can't be higher than 3
+  Rotation = m % 4;
   switch (Rotation) {
    case 0:
      if (TabColor == INITR_BLACKTAB) {
@@ -1227,6 +1227,8 @@ void ST7735_SetRotation(uint8_t m) {
      } else {
        writedata(MADCTL_MX | MADCTL_MY | MADCTL_BGR);
      }
+     ColStart = (TabColor == INITR_GREENTAB) ? 2 : 0;
+     RowStart = (TabColor == INITR_GREENTAB) ? 1 : 0;
      _width  = ST7735_TFTWIDTH;
      _height = ST7735_TFTHEIGHT;
      break;
@@ -1236,6 +1238,8 @@ void ST7735_SetRotation(uint8_t m) {
      } else {
        writedata(MADCTL_MY | MADCTL_MV | MADCTL_BGR);
      }
+     ColStart = (TabColor == INITR_GREENTAB) ? 1 : 0;
+     RowStart = (TabColor == INITR_GREENTAB) ? 2 : 0;
      _width  = ST7735_TFTHEIGHT;
      _height = ST7735_TFTWIDTH;
      break;
@@ -1245,6 +1249,8 @@ void ST7735_SetRotation(uint8_t m) {
      } else {
        writedata(MADCTL_BGR);
      }
+     ColStart = (TabColor == INITR_GREENTAB) ? 2 : 0;
+     RowStart = (TabColor == INITR_GREENTAB) ? 1 : 0;
      _width  = ST7735_TFTWIDTH;
      _height = ST7735_TFTHEIGHT;
     break;
@@ -1254,12 +1260,13 @@ void ST7735_SetRotation(uint8_t m) {
      } else {
        writedata(MADCTL_MX | MADCTL_MV | MADCTL_BGR);
      }
+     ColStart = (TabColor == INITR_GREENTAB) ? 1 : 0;
+     RowStart = (TabColor == INITR_GREENTAB) ? 2 : 0;
      _width  = ST7735_TFTHEIGHT;
      _height = ST7735_TFTWIDTH;
      break;
   }
 }
-
 
 //------------ST7735_InvertDisplay------------
 // Send the command to invert all of the colors.
