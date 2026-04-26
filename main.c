@@ -5,15 +5,24 @@
 #include "wait.h"
 #include <stdint.h>
 
-#define UP_PB 0
-#define DOW_PB 1
-#define OK_PB 2
+#define UP_PB 4
+#define DOW_PB 5
+#define OK_PB 6
 
 uint8_t arrow_pos = 0;
 // cursor movement
 // x: 0 to 20
 // y: 0 to 15
 
+//Screen
+//PA2 : SCL
+//PA3 : CS
+//PA5 : SDA
+//PA6 : DC
+//PA7 : RES
+//
+//PD0-3 : SPI1
+//PB4-7 : SPI2
 
 void draw_arrow(uint8_t pos) {
     // 3 positions 0,1,2.
@@ -97,9 +106,9 @@ void checkButtonDebounced(uint8_t PB) {
 
     waitMicrosecond(1e5);
     while(1){
-        if (getPinValue(PORTD, PB)) {
+        if (getPinValue(PORTC, PB)) {
             waitMicrosecond(2e3);
-            if(getPinValue(PORTD, PB))
+            if(getPinValue(PORTC, PB))
                 break;
         }
     }
@@ -121,10 +130,10 @@ void menu_controller(){
 
 int main(void) {
     initSystemClockTo40Mhz();
-    enablePort(PORTD);
-    selectPinDigitalInput(PORTD, UP_PB);
-    selectPinDigitalInput(PORTD, DOW_PB);
-    selectPinDigitalInput(PORTD, OK_PB);
+    enablePort(PORTC);
+    selectPinDigitalInput(PORTC, UP_PB);
+    selectPinDigitalInput(PORTC, DOW_PB);
+    selectPinDigitalInput(PORTC, OK_PB);
 
     Output_Init();
     ST7735_SetRotation(1);
@@ -136,15 +145,15 @@ reset:
 
     while (1) {
 
-        if (!getPinValue(PORTD, UP_PB)) {
+        if (!getPinValue(PORTC, UP_PB)) {
             update_arrow_pos(1);
             checkButtonDebounced(UP_PB);
 
-        } else if (!getPinValue(PORTD, DOW_PB)) {
+        } else if (!getPinValue(PORTC, DOW_PB)) {
             update_arrow_pos(-1);
             checkButtonDebounced(DOW_PB);
 
-        } else if (!getPinValue(PORTD, OK_PB)) {
+        } else if (!getPinValue(PORTC, OK_PB)) {
             menu_controller();
             checkButtonDebounced(OK_PB);
             goto reset;
