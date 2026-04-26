@@ -123,8 +123,6 @@ extern uint8_t  rfidCount;
 //-----------------------------------------------------------------------------
 
 void initRC(); // USE IN MAIN
-int8_t tryKnownKeys(uint8_t module, uint8_t blockAddr, uint8_t *serNum,
-                    uint8_t *outKey, uint8_t *outKeyType);
 void initSpi1(void);
 void setSpi1BaudRate(uint32_t baudRate, uint32_t fcyc);
 void initSpi2(void);
