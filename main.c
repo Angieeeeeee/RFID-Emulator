@@ -154,34 +154,31 @@ int main(void) {
     selectPinDigitalInput(PORTC, OK_PB);
 
     initRC();
-    volatile uint32_t cr0  = SSI1_CR0_R;   // expect 0x07
-    volatile uint32_t cr1  = SSI1_CR1_R;   // expect 0x02 (SSE set, MS=0 master)
-    volatile uint32_t cpsr = SSI1_CPSR_R;  // expect even number, ~40 for 1 MHz
-    bool test = rc522SpiSelfTest(RC522_1);
+    // bool test = rc522SpiSelfTest(RC522_1);
 
-//     Output_Init();
-//     ST7735_SetRotation(1);
-//     ST7735_SetTextColor(ST7735_GREEN);
-//     waitMicrosecond(1e6);
-//
-// reset:
-//     main_menu();
-//     draw_arrow(arrow_pos);
-//
-//     while (1) {
-//
-//         if (!getPinValue(PORTC, UP_PB)) {
-//             update_arrow_pos(1);
-//             checkButtonDebounced(UP_PB);
-//
-//         } else if (!getPinValue(PORTC, DOW_PB)) {
-//             update_arrow_pos(-1);
-//             checkButtonDebounced(DOW_PB);
-//
-//         } else if (!getPinValue(PORTC, OK_PB)) {
-//             menu_controller();
-//             checkButtonDebounced(OK_PB);
-//             goto reset;
-//         }
-//     }
+     Output_Init();
+     ST7735_SetRotation(1);
+     ST7735_SetTextColor(ST7735_GREEN);
+     waitMicrosecond(1e6);
+
+ reset:
+     main_menu();
+     draw_arrow(arrow_pos);
+
+     while (1) {
+
+         if (!getPinValue(PORTC, UP_PB)) {
+             update_arrow_pos(1);
+             checkButtonDebounced(UP_PB);
+
+         } else if (!getPinValue(PORTC, DOW_PB)) {
+             update_arrow_pos(-1);
+             checkButtonDebounced(DOW_PB);
+
+         } else if (!getPinValue(PORTC, OK_PB)) {
+             menu_controller();
+             checkButtonDebounced(OK_PB);
+             goto reset;
+         }
+     }
 }
