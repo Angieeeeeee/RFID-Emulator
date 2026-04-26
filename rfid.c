@@ -705,13 +705,54 @@ int8_t readRFID(char *name) {
         uint8_t blockInSector = j % 4;
 
         // Re-authenticate whenever we enter a new sector
+        // if (sector != lastSector) {
+        //     status = rc522Auth(RC522_1, PICC_MF_AUTH_KEY_A, j,
+        //                        (uint8_t *)defaultKeyA, serNum);
+        //     if (status != STATUS_OK) {
+        //         // Auth failed => skip the rest of this sector
+        //         j += (3u - blockInSector); // advance to last block of sector
+        //         continue;
+        //     }
+        //     lastSector = sector;
+        // }
         if (sector != lastSector) {
+            uint8_t workingKey[6];
+            uint8_t workingKeyType;
+        
+            // First try the default key directly — fast path for blank cards
             status = rc522Auth(RC522_1, PICC_MF_AUTH_KEY_A, j,
                                (uint8_t *)defaultKeyA, serNum);
+        
             if (status != STATUS_OK) {
-                // Auth failed => skip the rest of this sector
-                j += (3u - blockInSector); // advance to last block of sector
-                continue;
+                // Default failed — recover state and run the dictionary
+                rc522StopCrypto(RC522_1);
+                rc522HaltA(RC522_1);
+                waitMicrosecond(1000);
+        
+                uint8_t atqa[2];
+                if (rc522Request(RC522_1, PICC_REQA, atqa) != STATUS_OK) {
+                    j += (3u - blockInSector);
+                    continue;
+                }
+                if (rc522Anticoll(RC522_1, serNum) != STATUS_OK) {
+                    j += (3u - blockInSector);
+                    continue;
+                }
+                rc522SelectTag(RC522_1, serNum);
+        
+                if (tryKnownKeys(RC522_1, j, serNum,
+                                 workingKey, &workingKeyType) < 0) {
+                    // No key worked — DEFAULT BEHAVIOR: zero the block, mark unread
+                    for (i = 0; i < BLOCK_SIZE; i++) {
+                        rfidTable[entryIdx].blocks[blockCount].data[i] = 0x00;
+                    }
+                    rfidTable[entryIdx].blocks[blockCount].addr = j | 0x80;  // high bit = "auth failed"
+                    blockCount++;
+                    j += (3u - blockInSector);
+                    continue;
+                }
+                // tryKnownKeys leaves us authenticated for this sector
+                status = STATUS_OK;
             }
             lastSector = sector;
         }
