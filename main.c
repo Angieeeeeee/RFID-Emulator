@@ -154,29 +154,31 @@ int main(void) {
     selectPinDigitalInput(PORTC, OK_PB);
 
     initRC();
-    Output_Init();
-    ST7735_SetRotation(1);
-    ST7735_SetTextColor(ST7735_GREEN);
-    waitMicrosecond(1e6);
+    bool test = rc522SpiSelfTest(RC522_1);
 
-reset:
-    main_menu();
-    draw_arrow(arrow_pos);
-
-    while (1) {
-
-        if (!getPinValue(PORTC, UP_PB)) {
-            update_arrow_pos(1);
-            checkButtonDebounced(UP_PB);
-
-        } else if (!getPinValue(PORTC, DOW_PB)) {
-            update_arrow_pos(-1);
-            checkButtonDebounced(DOW_PB);
-
-        } else if (!getPinValue(PORTC, OK_PB)) {
-            menu_controller();
-            checkButtonDebounced(OK_PB);
-            goto reset;
-        }
-    }
+//     Output_Init();
+//     ST7735_SetRotation(1);
+//     ST7735_SetTextColor(ST7735_GREEN);
+//     waitMicrosecond(1e6);
+//
+// reset:
+//     main_menu();
+//     draw_arrow(arrow_pos);
+//
+//     while (1) {
+//
+//         if (!getPinValue(PORTC, UP_PB)) {
+//             update_arrow_pos(1);
+//             checkButtonDebounced(UP_PB);
+//
+//         } else if (!getPinValue(PORTC, DOW_PB)) {
+//             update_arrow_pos(-1);
+//             checkButtonDebounced(DOW_PB);
+//
+//         } else if (!getPinValue(PORTC, OK_PB)) {
+//             menu_controller();
+//             checkButtonDebounced(OK_PB);
+//             goto reset;
+//         }
+//     }
 }

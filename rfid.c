@@ -40,12 +40,12 @@ void initRC() {
 
     // init SPI
     initSpi1();
-    initSpi2();
-    setSpi1BaudRate(1000000, 40000000);
-    setSpi2BaudRate(1000000, 40000000);
+    //initSpi2();
+    setSpi1BaudRate(100000, 40000000);
+    //setSpi2BaudRate(100000, 40000000);
 
     rc522Init(RC522_1);
-    rc522Init(RC522_2);
+    //rc522Init(RC522_2);
 
     // empty table
     int i;

@@ -1,17 +1,17 @@
 ******************************************************************************
                   TI ARM Linker Unix v20.2.7                   
 ******************************************************************************
->> Linked Sun Apr 26 13:25:35 2026
+>> Linked Sun Apr 26 14:34:56 2026
 
 OUTPUT FILE NAME:   <COPIER_PROJ.out>
-ENTRY POINT SYMBOL: "_c_int00_noargs"  address: 000032cd
+ENTRY POINT SYMBOL: "_c_int00_noargs"  address: 000033e9
 
 
 MEMORY CONFIGURATION
 
          name            origin    length      used     unused   attr    fill
 ----------------------  --------  ---------  --------  --------  ----  --------
-  FLASH                 00000000   00040000  00003b7c  0003c484  R  X
+  FLASH                 00000000   00040000  00003c98  0003c368  R  X
   SRAM                  20000000   00008000  00000c5a  000073a6  RW X
 
 
@@ -19,11 +19,11 @@ SEGMENT ALLOCATION MAP
 
 run origin  load origin   length   init length attrs members
 ----------  ----------- ---------- ----------- ----- -------
-00000000    00000000    00003b80   00003b80    r-x
+00000000    00000000    00003c98   00003c98    r-x
   00000000    00000000    0000026c   0000026c    r-- .intvecs
-  0000026c    0000026c    000030ee   000030ee    r-x .text
-  0000335a    0000335a    000007ea   000007ea    r-- .const
-  00003b48    00003b48    00000038   00000038    r-- .cinit
+  0000026c    0000026c    0000320a   0000320a    r-x .text
+  00003476    00003476    000007ea   000007ea    r-- .const
+  00003c60    00003c60    00000038   00000038    r-- .cinit
 20000000    20000000    00000c5e   00000000    rw-
   20000000    20000000    00000a44   00000000    rw- .bss
   20000a48    20000a48    00000200   00000000    rw- .stack
@@ -38,42 +38,42 @@ section   page    origin      length       input sections
 .intvecs   0    00000000    0000026c     
                   00000000    0000026c     tm4c123gh6pm_startup_ccs.obj (.intvecs)
 
-.text      0    0000026c    000030ee     
+.text      0    0000026c    0000320a     
                   0000026c    000013f0     display_lib.obj (.text)
-                  0000165c    00001068     rfid.obj (.text)
-                  000026c4    00000808     gpio.obj (.text)
-                  00002ecc    0000023c     main.obj (.text)
-                  00003108    0000009c     rtsv7M4_T_le_v4SPD16_eabi.lib : memcpy_t2.asm.obj (.text)
-                  000031a4    0000007a                                   : memset_t2.asm.obj (.text)
-                  0000321e    00000068                                   : copy_decompress_lzss.c.obj (.text:decompress:lzss:__TI_decompress_lzss)
-                  00003286    00000002     --HOLE-- [fill = 0]
-                  00003288    00000044                                   : autoinit.c.obj (.text:__TI_auto_init_nobinit_nopinit:__TI_auto_init_nobinit_nopinit)
-                  000032cc    00000034                                   : boot_cortex_m.c.obj (.text:_c_int00_noargs:_c_int00_noargs)
-                  00003300    0000001c     wait.obj (.text)
-                  0000331c    00000010     clock.obj (.text)
-                  0000332c    0000000e     rtsv7M4_T_le_v4SPD16_eabi.lib : copy_decompress_none.c.obj (.text:decompress:none:__TI_decompress_none)
-                  0000333a    0000000c                                   : copy_zero_init.c.obj (.text:decompress:ZI:__TI_zero_init)
-                  00003346    0000000c     tm4c123gh6pm_startup_ccs.obj (.text)
-                  00003352    00000004     rtsv7M4_T_le_v4SPD16_eabi.lib : pre_init.c.obj (.text:_system_pre_init)
-                  00003356    00000004                                   : exit.c.obj (.text:abort:abort)
+                  0000165c    000010f0     rfid.obj (.text)
+                  0000274c    00000808     gpio.obj (.text)
+                  00002f54    000002d0     main.obj (.text)
+                  00003224    0000009c     rtsv7M4_T_le_v4SPD16_eabi.lib : memcpy_t2.asm.obj (.text)
+                  000032c0    0000007a                                   : memset_t2.asm.obj (.text)
+                  0000333a    00000068                                   : copy_decompress_lzss.c.obj (.text:decompress:lzss:__TI_decompress_lzss)
+                  000033a2    00000002     --HOLE-- [fill = 0]
+                  000033a4    00000044                                   : autoinit.c.obj (.text:__TI_auto_init_nobinit_nopinit:__TI_auto_init_nobinit_nopinit)
+                  000033e8    00000034                                   : boot_cortex_m.c.obj (.text:_c_int00_noargs:_c_int00_noargs)
+                  0000341c    0000001c     wait.obj (.text)
+                  00003438    00000010     clock.obj (.text)
+                  00003448    0000000e     rtsv7M4_T_le_v4SPD16_eabi.lib : copy_decompress_none.c.obj (.text:decompress:none:__TI_decompress_none)
+                  00003456    0000000c                                   : copy_zero_init.c.obj (.text:decompress:ZI:__TI_zero_init)
+                  00003462    0000000c     tm4c123gh6pm_startup_ccs.obj (.text)
+                  0000346e    00000004     rtsv7M4_T_le_v4SPD16_eabi.lib : pre_init.c.obj (.text:_system_pre_init)
+                  00003472    00000004                                   : exit.c.obj (.text:abort:abort)
 
-.const     0    0000335a    000007ea     
-                  0000335a    000004fb     display_lib.obj (.const:.string:Font)
-                  00003855    00000200     display_lib.obj (.const:.string:dBfs)
-                  00003a55    00000067     display_lib.obj (.const:.string:Bcmd)
-                  00003abc    0000003b     display_lib.obj (.const:.string:Rcmd1)
-                  00003af7    0000002b     display_lib.obj (.const:.string:Rcmd3)
-                  00003b22    0000000d     display_lib.obj (.const:.string:Rcmd2green)
-                  00003b2f    0000000d     display_lib.obj (.const:.string:Rcmd2red)
-                  00003b3c    00000006     rfid.obj (.const:.string:defaultKeyA)
-                  00003b42    00000002     rfid.obj (.const:.string:$P$T0$1)
+.const     0    00003476    000007ea     
+                  00003476    000004fb     display_lib.obj (.const:.string:Font)
+                  00003971    00000200     display_lib.obj (.const:.string:dBfs)
+                  00003b71    00000067     display_lib.obj (.const:.string:Bcmd)
+                  00003bd8    0000003b     display_lib.obj (.const:.string:Rcmd1)
+                  00003c13    0000002b     display_lib.obj (.const:.string:Rcmd3)
+                  00003c3e    0000000d     display_lib.obj (.const:.string:Rcmd2green)
+                  00003c4b    0000000d     display_lib.obj (.const:.string:Rcmd2red)
+                  00003c58    00000006     rfid.obj (.const:.string:defaultKeyA)
+                  00003c5e    00000002     rfid.obj (.const:.string:$P$T0$1)
 
-.cinit     0    00003b48    00000038     
-                  00003b48    00000012     (.cinit..data.load) [load image, compression = lzss]
-                  00003b5a    00000002     --HOLE-- [fill = 0]
-                  00003b5c    0000000c     (__TI_handler_table)
-                  00003b68    00000008     (.cinit..bss.load) [load image, compression = zero_init]
-                  00003b70    00000010     (__TI_cinit_table)
+.cinit     0    00003c60    00000038     
+                  00003c60    00000012     (.cinit..data.load) [load image, compression = lzss]
+                  00003c72    00000002     --HOLE-- [fill = 0]
+                  00003c74    0000000c     (__TI_handler_table)
+                  00003c80    00000008     (.cinit..bss.load) [load image, compression = zero_init]
+                  00003c88    00000010     (__TI_cinit_table)
 
 .init_array 
 *          0    00000000    00000000     UNINITIALIZED
@@ -106,14 +106,14 @@ MODULE SUMMARY
        ------                         ----    -------   -------
     ./
        display_lib.obj                5104    2018      56     
-       rfid.obj                       4200    8         2593   
+       rfid.obj                       4336    8         2593   
        gpio.obj                       2056    0         0      
+       main.obj                       720     0         1      
        tm4c123gh6pm_startup_ccs.obj   12      620       0      
-       main.obj                       572     0         1      
        wait.obj                       28      0         0      
        clock.obj                      16      0         0      
     +--+------------------------------+-------+---------+---------+
-       Total:                         11988   2646      2650   
+       Total:                         12272   2646      2650   
                                                                
     /Applications/ti/ccs1280/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/lib/rtsv7M4_T_le_v4SPD16_eabi.lib
        memcpy_t2.asm.obj              156     0         0      
@@ -131,19 +131,19 @@ MODULE SUMMARY
        Stack:                         0       0         512    
        Linker Generated:              0       54        0      
     +--+------------------------------+-------+---------+---------+
-       Grand Total:                   12524   2700      3162   
+       Grand Total:                   12808   2700      3162   
 
 
 LINKER GENERATED COPY TABLES
 
-__TI_cinit_table @ 00003b70 records: 2, size/record: 8, table size: 16
-	.data: load addr=00003b48, load size=00000012 bytes, run addr=20000c48, run size=00000016 bytes, compression=lzss
-	.bss: load addr=00003b68, load size=00000008 bytes, run addr=20000000, run size=00000a44 bytes, compression=zero_init
+__TI_cinit_table @ 00003c88 records: 2, size/record: 8, table size: 16
+	.data: load addr=00003c60, load size=00000012 bytes, run addr=20000c48, run size=00000016 bytes, compression=lzss
+	.bss: load addr=00003c80, load size=00000008 bytes, run addr=20000000, run size=00000a44 bytes, compression=zero_init
 
 
 LINKER GENERATED HANDLER TABLE
 
-__TI_handler_table @ 00003b5c records: 3, size/record: 4, table size: 12
+__TI_handler_table @ 00003c74 records: 3, size/record: 4, table size: 12
 	index: 0, handler: __TI_decompress_lzss
 	index: 1, handler: __TI_decompress_none
 	index: 2, handler: __TI_zero_init
@@ -153,9 +153,9 @@ GLOBAL SYMBOLS: SORTED ALPHABETICALLY BY Name
 
 address   name                          
 -------   ----                          
-00003357  C$$EXIT                       
+00003473  C$$EXIT                       
 000002b9  Delay1ms                      
-00002fe3  Delete_Key                    
+000030c7  Delete_Key                    
 20000a20  Message                       
 20000a30  Messageindex                  
 000015fb  Output_Clear                  
@@ -163,8 +163,8 @@ address   name
 000015eb  Output_Init                   
 00001605  Output_Off                    
 0000160d  Output_On                     
-00002f8b  Read_Key                      
-00003347  ResetISR                      
+00003013  Read_Key                      
+00003463  ResetISR                      
 0000091d  ST7735_Color565               
 0000097f  ST7735_DrawBitmap             
 00000cf1  ST7735_DrawChar               
@@ -196,7 +196,7 @@ address   name
 20000c50  StTextColor                   
 20000c48  StX                           
 20000c4c  StY                           
-00002fc9  Write_Key                     
+000030ad  Write_Key                     
 20000a34  X                             
 20000a38  Ymax                          
 20000a3c  Ymin                          
@@ -204,106 +204,108 @@ address   name
 20000c48  __STACK_END                   
 00000200  __STACK_SIZE                  
 20000c48  __STACK_TOP                   
-00003b70  __TI_CINIT_Base               
-00003b80  __TI_CINIT_Limit              
-00003b5c  __TI_Handler_Table_Base       
-00003b68  __TI_Handler_Table_Limit      
-00003289  __TI_auto_init_nobinit_nopinit
-0000321f  __TI_decompress_lzss          
-0000332d  __TI_decompress_none          
+00003c88  __TI_CINIT_Base               
+00003c98  __TI_CINIT_Limit              
+00003c74  __TI_Handler_Table_Base       
+00003c80  __TI_Handler_Table_Limit      
+000033a5  __TI_auto_init_nobinit_nopinit
+0000333b  __TI_decompress_lzss          
+00003449  __TI_decompress_none          
 ffffffff  __TI_pprof_out_hndl           
 ffffffff  __TI_prof_data_size           
 ffffffff  __TI_prof_data_start          
 00000000  __TI_static_base__            
-0000333b  __TI_zero_init                
-000031a5  __aeabi_memclr                
-000031a5  __aeabi_memclr4               
-000031a5  __aeabi_memclr8               
-00003109  __aeabi_memcpy                
-00003109  __aeabi_memcpy4               
-00003109  __aeabi_memcpy8               
-000031a7  __aeabi_memset                
-000031a7  __aeabi_memset4               
-000031a7  __aeabi_memset8               
+00003457  __TI_zero_init                
+000032c1  __aeabi_memclr                
+000032c1  __aeabi_memclr4               
+000032c1  __aeabi_memclr8               
+00003225  __aeabi_memcpy                
+00003225  __aeabi_memcpy4               
+00003225  __aeabi_memcpy8               
+000032c3  __aeabi_memset                
+000032c3  __aeabi_memset4               
+000032c3  __aeabi_memset8               
 ffffffff  __binit__                     
 ffffffff  __c_args__                    
 UNDEFED   __mpu_init                    
 20000a48  __stack                       
 20000000  __start___llvm_prf_cnts       
 20000000  __stop___llvm_prf_cnts        
-000032cd  _c_int00_noargs               
+000033e9  _c_int00_noargs               
 UNDEFED   _system_post_cinit            
-00003353  _system_pre_init              
-00003357  abort                         
+0000346f  _system_pre_init              
+00003473  abort                         
 20000c5c  arrow_pos                     
 ffffffff  binit                         
-00002ffd  checkButtonDebounced          
-00002d19  clearPinInterrupt             
-00003855  dBfs                          
-00002ee9  delete_arrow                  
-00002cf5  disablePinInterrupt           
-00002a2d  disablePinPulldown            
-000029e5  disablePinPullup              
-00002781  disablePort                   
-00002ecd  draw_arrow                    
-00002cd1  enablePinInterrupt            
-00002a09  enablePinPulldown             
-000029b7  enablePinPullup               
-000026c5  enablePort                    
+000030e1  checkButtonDebounced          
+00002da1  clearPinInterrupt             
+00003971  dBfs                          
+00002f71  delete_arrow                  
+00002d7d  disablePinInterrupt           
+00002ab5  disablePinPulldown            
+00002a6d  disablePinPullup              
+00002809  disablePort                   
+00002f55  draw_arrow                    
+00002d59  enablePinInterrupt            
+00002a91  enablePinPulldown             
+00002a3f  enablePinPullup               
+0000274d  enablePort                    
 000015dd  ferror                        
 000015d1  fgetc                         
 00000ee5  fillmessage                   
 000015bf  fputc                         
 00000000  g_pfnVectors                  
-00002d87  getPinValue                   
-00002e3d  getPortValue                  
+00002e0f  getPinValue                   
+00002ec5  getPortValue                  
 0000165d  initRC                        
-000016c5  initSpi1                      
-00001777  initSpi2                      
-0000331d  initSystemClockTo40Mhz        
+000016b3  initSpi1                      
+00001765  initSpi2                      
+00003439  initSystemClockTo40Mhz        
 20000c58  lastj                         
-00003051  main                          
-00002f4f  main_menu                     
-00003109  memcpy                        
-000031ad  memset                        
-0000302f  menu_controller               
-00001e21  rc522Anticoll                 
-00001f49  rc522Auth                     
-00001b09  rc522CalcCRC                  
-0000216d  rc522HaltA                    
-00001a69  rc522Init                     
-00002011  rc522ReadBlock                
-00001dc7  rc522Request                  
-00001eb5  rc522SelectTag                
-000021b1  rc522StopCrypto               
-00001bd5  rc522ToCard                   
-00002075  rc522WriteBlock               
-00001a25  rcClearBitMask                
-00001931  rcReadReg                     
-000019e9  rcSetBitMask                  
-00001897  rcWriteReg                    
-000021c5  readRFID                      
+00003135  main                          
+00002fd7  main_menu                     
+00003225  memcpy                        
+000032c9  memset                        
+00003113  menu_controller               
+00001ea9  rc522Anticoll                 
+00001fd1  rc522Auth                     
+00001ba5  rc522CalcCRC                  
+000019c9  rc522GetVersion               
+000021f5  rc522HaltA                    
+00001b0d  rc522Init                     
+00002099  rc522ReadBlock                
+00001e4f  rc522Request                  
+00001f3d  rc522SelectTag                
+000019fd  rc522SpiSelfTest              
+00002239  rc522StopCrypto               
+00001c5d  rc522ToCard                   
+000020fd  rc522WriteBlock               
+00001ac5  rcClearBitMask                
+0000191f  rcReadReg                     
+00001a8d  rcSetBitMask                  
+00001885  rcWriteReg                    
+0000224d  readRFID                      
 20000c5d  rfidCount                     
 20000000  rfidTable                     
-000028eb  selectPinAnalogInput          
-0000289d  selectPinDigitalInput         
-00002c07  selectPinInterruptBothEdges   
-00002bb7  selectPinInterruptFallingEdge 
-00002c5d  selectPinInterruptHighLevel   
-00002c97  selectPinInterruptLowLevel    
-00002b67  selectPinInterruptRisingEdge  
-0000284f  selectPinOpenDrainOutput      
-00002801  selectPinPushPullOutput       
-00002a55  setPinAuxFunction             
-0000293b  setPinCommitControl           
-00002d3d  setPinValue                   
-00002dc5  setPortValue                  
-0000174b  setSpi1BaudRate               
-000017ff  setSpi2BaudRate               
-00002d63  togglePinValue                
-00002f01  update_arrow_pos              
-00003301  waitMicrosecond               
-00002511  writeRFID                     
+00002973  selectPinAnalogInput          
+00002925  selectPinDigitalInput         
+00002c8f  selectPinInterruptBothEdges   
+00002c3f  selectPinInterruptFallingEdge 
+00002ce5  selectPinInterruptHighLevel   
+00002d1f  selectPinInterruptLowLevel    
+00002bef  selectPinInterruptRisingEdge  
+000028d7  selectPinOpenDrainOutput      
+00002889  selectPinPushPullOutput       
+00002add  setPinAuxFunction             
+000029c3  setPinCommitControl           
+00002dc5  setPinValue                   
+00002e4d  setPortValue                  
+00001739  setSpi1BaudRate               
+000017ed  setSpi2BaudRate               
+00002deb  togglePinValue                
+00002f89  update_arrow_pos              
+0000341d  waitMicrosecond               
+00002599  writeRFID                     
 
 
 GLOBAL SYMBOLS: SORTED BY Symbol Address 
@@ -352,89 +354,91 @@ address   name
 0000160d  Output_On                     
 00001615  Output_Color                  
 0000165d  initRC                        
-000016c5  initSpi1                      
-0000174b  setSpi1BaudRate               
-00001777  initSpi2                      
-000017ff  setSpi2BaudRate               
-00001897  rcWriteReg                    
-00001931  rcReadReg                     
-000019e9  rcSetBitMask                  
-00001a25  rcClearBitMask                
-00001a69  rc522Init                     
-00001b09  rc522CalcCRC                  
-00001bd5  rc522ToCard                   
-00001dc7  rc522Request                  
-00001e21  rc522Anticoll                 
-00001eb5  rc522SelectTag                
-00001f49  rc522Auth                     
-00002011  rc522ReadBlock                
-00002075  rc522WriteBlock               
-0000216d  rc522HaltA                    
-000021b1  rc522StopCrypto               
-000021c5  readRFID                      
-00002511  writeRFID                     
-000026c5  enablePort                    
-00002781  disablePort                   
-00002801  selectPinPushPullOutput       
-0000284f  selectPinOpenDrainOutput      
-0000289d  selectPinDigitalInput         
-000028eb  selectPinAnalogInput          
-0000293b  setPinCommitControl           
-000029b7  enablePinPullup               
-000029e5  disablePinPullup              
-00002a09  enablePinPulldown             
-00002a2d  disablePinPulldown            
-00002a55  setPinAuxFunction             
-00002b67  selectPinInterruptRisingEdge  
-00002bb7  selectPinInterruptFallingEdge 
-00002c07  selectPinInterruptBothEdges   
-00002c5d  selectPinInterruptHighLevel   
-00002c97  selectPinInterruptLowLevel    
-00002cd1  enablePinInterrupt            
-00002cf5  disablePinInterrupt           
-00002d19  clearPinInterrupt             
-00002d3d  setPinValue                   
-00002d63  togglePinValue                
-00002d87  getPinValue                   
-00002dc5  setPortValue                  
-00002e3d  getPortValue                  
-00002ecd  draw_arrow                    
-00002ee9  delete_arrow                  
-00002f01  update_arrow_pos              
-00002f4f  main_menu                     
-00002f8b  Read_Key                      
-00002fc9  Write_Key                     
-00002fe3  Delete_Key                    
-00002ffd  checkButtonDebounced          
-0000302f  menu_controller               
-00003051  main                          
-00003109  __aeabi_memcpy                
-00003109  __aeabi_memcpy4               
-00003109  __aeabi_memcpy8               
-00003109  memcpy                        
-000031a5  __aeabi_memclr                
-000031a5  __aeabi_memclr4               
-000031a5  __aeabi_memclr8               
-000031a7  __aeabi_memset                
-000031a7  __aeabi_memset4               
-000031a7  __aeabi_memset8               
-000031ad  memset                        
-0000321f  __TI_decompress_lzss          
-00003289  __TI_auto_init_nobinit_nopinit
-000032cd  _c_int00_noargs               
-00003301  waitMicrosecond               
-0000331d  initSystemClockTo40Mhz        
-0000332d  __TI_decompress_none          
-0000333b  __TI_zero_init                
-00003347  ResetISR                      
-00003353  _system_pre_init              
-00003357  C$$EXIT                       
-00003357  abort                         
-00003855  dBfs                          
-00003b5c  __TI_Handler_Table_Base       
-00003b68  __TI_Handler_Table_Limit      
-00003b70  __TI_CINIT_Base               
-00003b80  __TI_CINIT_Limit              
+000016b3  initSpi1                      
+00001739  setSpi1BaudRate               
+00001765  initSpi2                      
+000017ed  setSpi2BaudRate               
+00001885  rcWriteReg                    
+0000191f  rcReadReg                     
+000019c9  rc522GetVersion               
+000019fd  rc522SpiSelfTest              
+00001a8d  rcSetBitMask                  
+00001ac5  rcClearBitMask                
+00001b0d  rc522Init                     
+00001ba5  rc522CalcCRC                  
+00001c5d  rc522ToCard                   
+00001e4f  rc522Request                  
+00001ea9  rc522Anticoll                 
+00001f3d  rc522SelectTag                
+00001fd1  rc522Auth                     
+00002099  rc522ReadBlock                
+000020fd  rc522WriteBlock               
+000021f5  rc522HaltA                    
+00002239  rc522StopCrypto               
+0000224d  readRFID                      
+00002599  writeRFID                     
+0000274d  enablePort                    
+00002809  disablePort                   
+00002889  selectPinPushPullOutput       
+000028d7  selectPinOpenDrainOutput      
+00002925  selectPinDigitalInput         
+00002973  selectPinAnalogInput          
+000029c3  setPinCommitControl           
+00002a3f  enablePinPullup               
+00002a6d  disablePinPullup              
+00002a91  enablePinPulldown             
+00002ab5  disablePinPulldown            
+00002add  setPinAuxFunction             
+00002bef  selectPinInterruptRisingEdge  
+00002c3f  selectPinInterruptFallingEdge 
+00002c8f  selectPinInterruptBothEdges   
+00002ce5  selectPinInterruptHighLevel   
+00002d1f  selectPinInterruptLowLevel    
+00002d59  enablePinInterrupt            
+00002d7d  disablePinInterrupt           
+00002da1  clearPinInterrupt             
+00002dc5  setPinValue                   
+00002deb  togglePinValue                
+00002e0f  getPinValue                   
+00002e4d  setPortValue                  
+00002ec5  getPortValue                  
+00002f55  draw_arrow                    
+00002f71  delete_arrow                  
+00002f89  update_arrow_pos              
+00002fd7  main_menu                     
+00003013  Read_Key                      
+000030ad  Write_Key                     
+000030c7  Delete_Key                    
+000030e1  checkButtonDebounced          
+00003113  menu_controller               
+00003135  main                          
+00003225  __aeabi_memcpy                
+00003225  __aeabi_memcpy4               
+00003225  __aeabi_memcpy8               
+00003225  memcpy                        
+000032c1  __aeabi_memclr                
+000032c1  __aeabi_memclr4               
+000032c1  __aeabi_memclr8               
+000032c3  __aeabi_memset                
+000032c3  __aeabi_memset4               
+000032c3  __aeabi_memset8               
+000032c9  memset                        
+0000333b  __TI_decompress_lzss          
+000033a5  __TI_auto_init_nobinit_nopinit
+000033e9  _c_int00_noargs               
+0000341d  waitMicrosecond               
+00003439  initSystemClockTo40Mhz        
+00003449  __TI_decompress_none          
+00003457  __TI_zero_init                
+00003463  ResetISR                      
+0000346f  _system_pre_init              
+00003473  C$$EXIT                       
+00003473  abort                         
+00003971  dBfs                          
+00003c74  __TI_Handler_Table_Base       
+00003c80  __TI_Handler_Table_Limit      
+00003c88  __TI_CINIT_Base               
+00003c98  __TI_CINIT_Limit              
 20000000  __start___llvm_prf_cnts       
 20000000  __stop___llvm_prf_cnts        
 20000000  rfidTable                     
@@ -462,4 +466,4 @@ ffffffff  binit
 UNDEFED   __mpu_init                    
 UNDEFED   _system_post_cinit            
 
-[151 symbols]
+[153 symbols]
