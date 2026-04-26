@@ -183,26 +183,24 @@ void rcWriteReg(uint8_t module, uint8_t reg, uint8_t val) {
 }
 
 uint8_t rcReadReg(uint8_t module, uint8_t reg) {
-    uint8_t addr = ((reg << 1) & 0x7E) | 0x80; // bit 7 is 1 read
+    uint8_t addr = ((reg << 1) & 0x7E) | 0x80;
     uint8_t val;
 
     if (module == RC522_1) {
-        while (SSI1_SR_R & SSI_SR_RNE) {
-            uint32_t dummy = SSI1_DR_R;
-        };
+        while (SSI1_SR_R & SSI_SR_RNE) { (void)SSI1_DR_R; }
         setPinValue(RC1FSS, 0);
         waitMicrosecond(1);
-        spi2Transfer(addr);       // starts driving MISO
-        val = spi2Transfer(0x00); // function returns SSI1_DR_R
+        spi1Transfer(addr);          // fixed
+        val = spi1Transfer(0x00);    // fixed
         waitMicrosecond(1);
         setPinValue(RC1FSS, 1);
     } else {
-        while (SSI2_SR_R & SSI_SR_RNE) {
-            uint32_t dummy = SSI2_DR_R;
-        };
+        while (SSI2_SR_R & SSI_SR_RNE) { (void)SSI2_DR_R; }
         setPinValue(RC2FSS, 0);
+        waitMicrosecond(1);          // add for symmetry with module 1
         spi2Transfer(addr);
         val = spi2Transfer(0x00);
+        waitMicrosecond(1);
         setPinValue(RC2FSS, 1);
     }
     return val;
@@ -211,6 +209,27 @@ uint8_t rcReadReg(uint8_t module, uint8_t reg) {
 //-----------------------------------------------------------------------------
 // RC522 TRANSMISSION
 //-----------------------------------------------------------------------------
+#define VersionReg  0x37    // RC522 silicon version
+
+uint8_t rc522GetVersion(uint8_t module) {
+    return rcReadReg(module, VersionReg);
+}
+
+// Round-trip self-test: verifies both writes and reads land correctly.
+// Returns true if SPI is wired and clocking properly.
+bool rc522SpiSelfTest(uint8_t module) {
+    uint8_t v = rcReadReg(module, VersionReg);
+    if (v == 0x00 || v == 0xFF) return false;   // bus dead or floating
+
+    // TReloadRegL is freely R/W and not latched in active use here
+    uint8_t orig = rcReadReg(module, TReloadRegL);
+    rcWriteReg(module, TReloadRegL, 0xA5);
+    if (rcReadReg(module, TReloadRegL) != 0xA5) return false;
+    rcWriteReg(module, TReloadRegL, 0x5A);
+    if (rcReadReg(module, TReloadRegL) != 0x5A) return false;
+    rcWriteReg(module, TReloadRegL, orig);
+    return true;
+}
 
 // add bits read from this reg onto a mask
 void rcSetBitMask(uint8_t module, uint8_t reg, uint8_t mask) {
