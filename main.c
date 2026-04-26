@@ -7,9 +7,11 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#define UP_PB 4
+#define UP_PB  4
 #define DOW_PB 5
-#define OK_PB 6
+#define OK_PB  6
+
+#define MAIN_MENU_ITEMS 4   // Read, Write, Delete, Inspect
 
 uint8_t arrow_pos = 0;
 
@@ -27,116 +29,27 @@ uint8_t arrow_pos = 0;
 // PD0-3 : SPI1
 // PB4-7 : SPI2
 
-void draw_arrow(uint8_t pos) {
-    // 3 positions 0,1,2.
-    // updates position depending on the buttons pressed
-    ST7735_SetCursor(13, 4 + pos * 2);
-    ST7735_OutString("<--");
-}
+typedef enum {
+    ACT_WRITE,
+    ACT_DELETE,
+    ACT_INSPECT
+} MenuAction;
 
-void delete_arrow() {
-    ST7735_SetCursor(13, 4 + arrow_pos * 2);
-    ST7735_OutString("   ");
-}
+//-----------------------------------------------------------------------------
+// Helpers
+//-----------------------------------------------------------------------------
 
-void update_arrow_pos(int8_t pos) {
-
-    delete_arrow();
-
-    if (pos == -1) {
-        if (arrow_pos == 2)
-            arrow_pos = 0;
-        else
-            ++arrow_pos;
-
-    } else {
-        if (arrow_pos == 0)
-            arrow_pos = 2;
-        else
-            --arrow_pos;
-    }
-
-    draw_arrow(arrow_pos);
-}
-
-void main_menu() {
-
-    ST7735_SetCursor(3, 1);
-    ST7735_OutString("--- Main Menu ---");
-    ST7735_SetCursor(1, 4);
-    ST7735_OutString("Read Key");
-    ST7735_SetCursor(1, 6);
-    ST7735_OutString("Write Key");
-    ST7735_SetCursor(1, 8);
-    ST7735_OutString("Delete Key");
-}
-
-void Read_Key() {
-
+// Output_Clear() only paints the screen black — it does NOT reset the
+// driver's StX/StY cursor globals. After paths that emit '\n' or run past
+// column 20, those globals are left in an unpredictable state, which is
+// what was making the next menu draw look "shifted." Always pair the
+// fill-black with an explicit cursor reset.
+static void clear_screen(void) {
     Output_Clear();
-    ST7735_SetCursor(6, 6);
-    ST7735_OutString("Reading...");
-    waitMicrosecond(1e6);
-    int8_t key_index = readRFID();
-    if (key_index >= 0) {
-        Output_Clear();
-        waitMicrosecond(1e5);
-        ST7735_SetCursor(1, 6);
-        ST7735_OutString(rfidTable[key_index].name);
-        ST7735_OutString(" Read");
-
-    } else if (key_index == -1) {
-        Output_Clear();
-        waitMicrosecond(1e5);
-        ST7735_SetCursor(4, 6);
-        ST7735_OutString("No Tag Detected");
-
-    } else {
-        Output_Clear();
-        waitMicrosecond(1e5);
-        ST7735_SetCursor(6, 6);
-        ST7735_OutString("No Space\n");
-        ST7735_OutString("Delete a Key\n");
-    }
-
-    waitMicrosecond(2e6);
-    Output_Clear();
+    ST7735_SetCursor(0, 0);
 }
 
-// TODO: both write and delete key will print the same key menu
-void Write_Key() {
-
-    Output_Clear();
-    ST7735_SetCursor(3, 1);
-    ST7735_OutString("---Key Menu---");
-    // rfidTable[key_index].name
-    //  here we would display all keys that we have
-    //  loop over the keys and implement the select
-    Output_Clear();
-}
-
-void Delete_Key() {
-
-    Output_Clear();
-    ST7735_SetCursor(3, 1);
-    ST7735_OutString("---Key Menu---");
-    int8_t i = 0;
-    for(; i < MAX_RFID_ENTRIES; ++i){
-        if(rfidTable[i].hasData == 1){
-            ST7735_SetCursor(1, 4+i*2);
-            ST7735_OutString(rfidTable[i].name);
-        }
-    }
-    arrow_pos = 0;
-    draw_arrow(arrow_pos);
-    while(1);
-
-    // here we would display all keys that we have
-    // loop over the keys and implement the select
-    Output_Clear();
-}
 void checkButtonDebounced(uint8_t PB) {
-
     waitMicrosecond(1e5);
     while (1) {
         if (getPinValue(PORTC, PB)) {
@@ -147,16 +60,262 @@ void checkButtonDebounced(uint8_t PB) {
     }
 }
 
-void menu_controller() {
+// Block until OK is pressed, then debounce its release.
+static void wait_for_ok(void) {
+    while (getPinValue(PORTC, OK_PB));   // wait for press (active low)
+    checkButtonDebounced(OK_PB);          // wait for release
+}
+
+//-----------------------------------------------------------------------------
+// Main menu
+//-----------------------------------------------------------------------------
+
+static void draw_arrow(uint8_t pos) {
+    ST7735_SetCursor(13, 4 + pos * 2);
+    ST7735_OutString("<--");
+}
+
+static void erase_arrow(uint8_t pos) {
+    ST7735_SetCursor(13, 4 + pos * 2);
+    ST7735_OutString("   ");
+}
+
+// direction == -1 moves the arrow DOWN, anything else moves it UP
+// (kept the same sign convention as the original code)
+static void update_arrow_pos(int8_t direction) {
+    erase_arrow(arrow_pos);
+    if (direction == -1) {
+        arrow_pos = (arrow_pos + 1) % MAIN_MENU_ITEMS;
+    } else {
+        arrow_pos = (arrow_pos == 0) ? (MAIN_MENU_ITEMS - 1) : (arrow_pos - 1);
+    }
+    draw_arrow(arrow_pos);
+}
+
+void main_menu(void) {
+    ST7735_SetCursor(3, 1);
+    ST7735_OutString("--- Main Menu ---");
+    ST7735_SetCursor(1, 4);
+    ST7735_OutString("Read Key");
+    ST7735_SetCursor(1, 6);
+    ST7735_OutString("Write Key");
+    ST7735_SetCursor(1, 8);
+    ST7735_OutString("Delete Key");
+    ST7735_SetCursor(1, 10);
+    ST7735_OutString("Inspect Key");
+}
+
+//-----------------------------------------------------------------------------
+// Read action
+//-----------------------------------------------------------------------------
+
+void Read_Key(void) {
+    clear_screen();
+    ST7735_SetCursor(6, 6);
+    ST7735_OutString("Reading...");
+    waitMicrosecond(1e6);
+
+    int8_t key_index = readRFID();
+
+    clear_screen();
+    if (key_index >= 0) {
+        ST7735_SetCursor(1, 6);
+        ST7735_OutString(rfidTable[key_index].name);
+        ST7735_OutString(" Read");
+    } else if (key_index == -1) {
+        ST7735_SetCursor(2, 6);
+        ST7735_OutString("No Tag Detected");
+    } else {
+        // Replaced the original \n-terminated strings with explicit
+        // SetCursor calls — \n in this driver advances StY *and* paints
+        // a 21-space line at the new row, which leaves cursor state
+        // pointing somewhere we don't expect.
+        ST7735_SetCursor(5, 5);
+        ST7735_OutString("No Space");
+        ST7735_SetCursor(3, 7);
+        ST7735_OutString("Delete a Key");
+    }
+
+    waitMicrosecond(2e6);
+    clear_screen();
+}
+
+//-----------------------------------------------------------------------------
+// Shared key list selector
+//
+// Used by Write / Delete / Inspect. Builds a compact list of all populated
+// rfidTable entries followed by a "Back" option, lets the user navigate
+// with UP/DOW and pick with OK.
+//
+// Returns:
+//   >= 0  table index of the selected entry
+//    -1   user picked Back
+//    -2   no entries to show (empty list screen was shown, OK dismissed)
+//-----------------------------------------------------------------------------
+
+static int8_t key_menu_select(const char *title) {
+    int8_t display_to_table[MAX_RFID_ENTRIES];
+    int8_t entry_count = 0;
+    uint8_t i;
+
+    for (i = 0; i < MAX_RFID_ENTRIES; i++) {
+        if (rfidTable[i].hasData) {
+            display_to_table[entry_count++] = (int8_t)i;
+        }
+    }
+
+    // Empty list: just show a message and wait for OK
+    if (entry_count == 0) {
+        clear_screen();
+        ST7735_SetCursor(3, 1);
+        ST7735_OutString(title);
+        ST7735_SetCursor(2, 5);
+        ST7735_OutString("No keys stored");
+        ST7735_SetCursor(2, 8);
+        ST7735_OutString("OK to go back");
+        wait_for_ok();
+        return -2;
+    }
+
+    int8_t total_options = entry_count + 1;   // +1 for the Back row
+    int8_t local_pos = 0;
+
+    // Initial render. Spacing of 1 row per item lets us fit
+    // 8 entries + Back inside the visible area in landscape mode.
+    clear_screen();
+    ST7735_SetCursor(3, 1);
+    ST7735_OutString(title);
+    for (i = 0; i < entry_count; i++) {
+        ST7735_SetCursor(1, 3 + i);
+        ST7735_OutString(rfidTable[display_to_table[i]].name);
+    }
+    ST7735_SetCursor(1, 3 + entry_count);
+    ST7735_OutString("Back");
+    ST7735_SetCursor(13, 3 + local_pos);
+    ST7735_OutString("<--");
+
+    while (1) {
+        if (!getPinValue(PORTC, UP_PB)) {
+            ST7735_SetCursor(13, 3 + local_pos);
+            ST7735_OutString("   ");
+            local_pos = (local_pos == 0) ? (total_options - 1) : (local_pos - 1);
+            ST7735_SetCursor(13, 3 + local_pos);
+            ST7735_OutString("<--");
+            checkButtonDebounced(UP_PB);
+        } else if (!getPinValue(PORTC, DOW_PB)) {
+            ST7735_SetCursor(13, 3 + local_pos);
+            ST7735_OutString("   ");
+            local_pos = (local_pos + 1) % total_options;
+            ST7735_SetCursor(13, 3 + local_pos);
+            ST7735_OutString("<--");
+            checkButtonDebounced(DOW_PB);
+        } else if (!getPinValue(PORTC, OK_PB)) {
+            checkButtonDebounced(OK_PB);
+            if (local_pos == entry_count) {
+                return -1;   // Back
+            }
+            return display_to_table[local_pos];
+        }
+    }
+}
+
+//-----------------------------------------------------------------------------
+// Inspect — show UID and metadata for one entry
+//-----------------------------------------------------------------------------
+
+static void inspect_display(int8_t idx) {
+    char buf[20];
+
+    clear_screen();
+    ST7735_SetCursor(3, 1);
+    ST7735_OutString("--- Inspect ---");
+
+    ST7735_SetCursor(1, 3);
+    ST7735_OutString("Name: ");
+    ST7735_OutString(rfidTable[idx].name);
+
+    // UID as hex bytes (4 bytes from the table; the 5th is the BCC)
+    ST7735_SetCursor(1, 5);
+    ST7735_OutString("UID: ");
+    uint8_t i;
+    uint8_t shown = (rfidTable[idx].uidLength > 4) ? 4 : rfidTable[idx].uidLength;
+    for (i = 0; i < shown; i++) {
+        sprintf(buf, "%02X ", rfidTable[idx].uid[i]);
+        ST7735_OutString(buf);
+    }
+
+    // 32-bit packed ID — what writeRFID() takes as its argument
+    ST7735_SetCursor(1, 7);
+    ST7735_OutString("ID:  ");
+    sprintf(buf, "%08lX", (unsigned long)rfidTable[idx].id);
+    ST7735_OutString(buf);
+
+    ST7735_SetCursor(1, 9);
+    ST7735_OutString("Blocks read: ");
+    sprintf(buf, "%d", rfidTable[idx].blockCount);
+    ST7735_OutString(buf);
+
+    ST7735_SetCursor(1, 12);
+    ST7735_OutString("OK to go back");
+
+    wait_for_ok();
+}
+
+//-----------------------------------------------------------------------------
+// key_menu — single dispatcher used by Write / Delete / Inspect
+//-----------------------------------------------------------------------------
+
+static void key_menu(MenuAction action) {
+    const char *title;
+    switch (action) {
+        case ACT_WRITE:   title = "--- Write Key ---";   break;
+        case ACT_DELETE:  title = "--- Delete Key ---";  break;
+        case ACT_INSPECT: title = "-- Inspect Key --";   break;
+        default:          title = "--- ??? ---";         break;
+    }
+
+    int8_t idx = key_menu_select(title);
+    if (idx < 0) return;   // Back or empty list
+
+    switch (action) {
+        case ACT_WRITE: {
+            clear_screen();
+            ST7735_SetCursor(4, 6);
+            ST7735_OutString("Writing...");
+            waitMicrosecond(1e6);
+            uint8_t status = writeRFID(rfidTable[idx].id);
+            clear_screen();
+            ST7735_SetCursor(4, 6);
+            ST7735_OutString(status == STATUS_OK ? "Write OK" : "Write Failed");
+            waitMicrosecond(2e6);
+            break;
+        }
+        case ACT_DELETE: {
+            rfidTable[idx].hasData = 0;
+            if (rfidCount > 0) rfidCount--;
+            clear_screen();
+            ST7735_SetCursor(5, 6);
+            ST7735_OutString("Deleted");
+            waitMicrosecond(1e6);
+            break;
+        }
+        case ACT_INSPECT: {
+            inspect_display(idx);
+            break;
+        }
+    }
+}
+
+//-----------------------------------------------------------------------------
+// Top level
+//-----------------------------------------------------------------------------
+
+void menu_controller(void) {
     switch (arrow_pos) {
-    case 0:
-        Read_Key();
-        break;
-    case 1:;
-        Write_Key();
-           break;
-    default:
-        Delete_Key();
+        case 0: Read_Key();             break;
+        case 1: key_menu(ACT_WRITE);    break;
+        case 2: key_menu(ACT_DELETE);   break;
+        case 3: key_menu(ACT_INSPECT);  break;
     }
 }
 
@@ -169,32 +328,29 @@ int main(void) {
     selectPinDigitalInput(PORTC, OK_PB);
 
     initRC();
-    // bool test = rc522SpiSelfTest(RC522_1);
-
     Output_Init();
     ST7735_SetRotation(1);
     ST7735_SetTextColor(ST7735_GREEN);
     waitMicrosecond(1e6);
 
 reset:
-    Output_Clear();
-    waitMicrosecond(1e5);
+    clear_screen();
     main_menu();
     draw_arrow(arrow_pos);
 
     while (1) {
-
         if (!getPinValue(PORTC, UP_PB)) {
             update_arrow_pos(1);
             checkButtonDebounced(UP_PB);
-
         } else if (!getPinValue(PORTC, DOW_PB)) {
             update_arrow_pos(-1);
             checkButtonDebounced(DOW_PB);
-
         } else if (!getPinValue(PORTC, OK_PB)) {
-            menu_controller();
+            // Debounce OK FIRST, before dispatching. Otherwise the
+            // sub-menu's input loop sees OK still pressed from the
+            // main menu and immediately auto-selects its first item.
             checkButtonDebounced(OK_PB);
+            menu_controller();
             goto reset;
         }
     }
