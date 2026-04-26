@@ -154,6 +154,9 @@ int main(void) {
     selectPinDigitalInput(PORTC, OK_PB);
 
     initRC();
+    volatile uint32_t cr0  = SSI1_CR0_R;   // expect 0x07
+    volatile uint32_t cr1  = SSI1_CR1_R;   // expect 0x02 (SSE set, MS=0 master)
+    volatile uint32_t cpsr = SSI1_CPSR_R;  // expect even number, ~40 for 1 MHz
     bool test = rc522SpiSelfTest(RC522_1);
 
 //     Output_Init();
