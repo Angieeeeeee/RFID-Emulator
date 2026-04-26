@@ -33,26 +33,26 @@ static const uint8_t defaultKeyA[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 // Known-keys dictionary for MIFARE Classic
 //-----------------------------------------------------------------------------
 static const uint8_t knownKeys[][6] = {
-    {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF},  // factory default
-    {0x00, 0x00, 0x00, 0x00, 0x00, 0x00},  // all-zero
-    {0xA0, 0xA1, 0xA2, 0xA3, 0xA4, 0xA5},  // MAD key A (sector 0)
-    {0xD3, 0xF7, 0xD3, 0xF7, 0xD3, 0xF7},  // NDEF public key
-    {0xB0, 0xB1, 0xB2, 0xB3, 0xB4, 0xB5},  // common transit
-    {0x4D, 0x3A, 0x99, 0xC3, 0x51, 0xDD},  // common
-    {0x1A, 0x98, 0x2C, 0x7E, 0x45, 0x9A},  // common
-    {0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF},  // common pattern
-    {0x71, 0x4C, 0x5C, 0x88, 0x6E, 0x97},  // common
-    {0x58, 0x7E, 0xE5, 0xF9, 0x35, 0x0F},  // common
-    {0xA0, 0x47, 0x8C, 0xC3, 0x90, 0x91},  // common
-    {0x53, 0x3C, 0xB6, 0xC7, 0x23, 0xF6},  // common
-    {0x8F, 0xD0, 0xA4, 0xF2, 0x56, 0xE9},  // common
-    {0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC},  // weak
-    {0x11, 0x11, 0x11, 0x11, 0x11, 0x11},  // weak repeat
-    {0x22, 0x22, 0x22, 0x22, 0x22, 0x22},  // weak repeat
-    {0x33, 0x33, 0x33, 0x33, 0x33, 0x33},  // weak repeat
-    {0x44, 0x44, 0x44, 0x44, 0x44, 0x44},  // weak repeat
-    {0x55, 0x55, 0x55, 0x55, 0x55, 0x55},  // weak repeat
-    {0x66, 0x66, 0x66, 0x66, 0x66, 0x66},  // weak repeat
+    {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}, // factory default
+    {0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, // all-zero
+    {0xA0, 0xA1, 0xA2, 0xA3, 0xA4, 0xA5}, // MAD key A (sector 0)
+    {0xD3, 0xF7, 0xD3, 0xF7, 0xD3, 0xF7}, // NDEF public key
+    {0xB0, 0xB1, 0xB2, 0xB3, 0xB4, 0xB5}, // common transit
+    {0x4D, 0x3A, 0x99, 0xC3, 0x51, 0xDD}, // common
+    {0x1A, 0x98, 0x2C, 0x7E, 0x45, 0x9A}, // common
+    {0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF}, // common pattern
+    {0x71, 0x4C, 0x5C, 0x88, 0x6E, 0x97}, // common
+    {0x58, 0x7E, 0xE5, 0xF9, 0x35, 0x0F}, // common
+    {0xA0, 0x47, 0x8C, 0xC3, 0x90, 0x91}, // common
+    {0x53, 0x3C, 0xB6, 0xC7, 0x23, 0xF6}, // common
+    {0x8F, 0xD0, 0xA4, 0xF2, 0x56, 0xE9}, // common
+    {0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC}, // weak
+    {0x11, 0x11, 0x11, 0x11, 0x11, 0x11}, // weak repeat
+    {0x22, 0x22, 0x22, 0x22, 0x22, 0x22}, // weak repeat
+    {0x33, 0x33, 0x33, 0x33, 0x33, 0x33}, // weak repeat
+    {0x44, 0x44, 0x44, 0x44, 0x44, 0x44}, // weak repeat
+    {0x55, 0x55, 0x55, 0x55, 0x55, 0x55}, // weak repeat
+    {0x66, 0x66, 0x66, 0x66, 0x66, 0x66}, // weak repeat
 };
 #define KNOWN_KEY_COUNT (sizeof(knownKeys) / sizeof(knownKeys[0]))
 //-----------------------------------------------------------------------------
@@ -96,8 +96,10 @@ int8_t tryKnownKeys(uint8_t module, uint8_t blockAddr, uint8_t *serNum,
 
             uint8_t atqa[2];
             uint8_t tmpSer[5];
-            if (rc522Request(module, PICC_REQA, atqa) != STATUS_OK) continue;
-            if (rc522Anticoll(module, tmpSer) != STATUS_OK) continue;
+            if (rc522Request(module, PICC_REQA, atqa) != STATUS_OK)
+                continue;
+            if (rc522Anticoll(module, tmpSer) != STATUS_OK)
+                continue;
             rc522SelectTag(module, tmpSer);
         }
     }
@@ -113,14 +115,14 @@ void initRC() {
 
     // init SPI
     initSpi1();
-    disablePinPulldown(PORTD, 2);   // MISO must float, then SSI takes over
+    disablePinPulldown(PORTD, 2); // MISO must float, then SSI takes over
     disablePinPullup(PORTD, 2);
-    //initSpi2();
+    // initSpi2();
     setSpi1BaudRate(100000, 40000000);
-    //setSpi2BaudRate(100000, 40000000);
+    // setSpi2BaudRate(100000, 40000000);
 
     rc522Init(RC522_1);
-    //rc522Init(RC522_2);
+    // rc522Init(RC522_2);
 
     // empty table
     int i;
@@ -170,7 +172,7 @@ void initSpi2(void) {
     SYSCTL_RCGCSSI_R |= SYSCTL_RCGCSSI_R2;
     _delay_cycles(3);
 
-    GPIO_PORTB_AMSEL_R &= ~((1<<4)|(1<<5)|(1<<6)|(1<<7));
+    GPIO_PORTB_AMSEL_R &= ~((1 << 4) | (1 << 5) | (1 << 6) | (1 << 7));
     // MOSI
     selectPinPushPullOutput(RC2TX);
     setPinAuxFunction(RC2TX, GPIO_PCTL_PB7_SSI2TX);
@@ -242,8 +244,8 @@ void rcWriteReg(uint8_t module, uint8_t reg, uint8_t val) {
         };
         setPinValue(RC1FSS, 0); // CS assert
         waitMicrosecond(1);
-        spi1Transfer(addr);     // address phase  (RX byte discarded)
-        spi1Transfer(val);      // data phase     (RX byte discarded
+        spi1Transfer(addr); // address phase  (RX byte discarded)
+        spi1Transfer(val);  // data phase     (RX byte discarded
         waitMicrosecond(1);
         setPinValue(RC1FSS, 1); // CS deassert
     } else {                    // if we wanna use rc2
@@ -262,17 +264,21 @@ uint8_t rcReadReg(uint8_t module, uint8_t reg) {
     uint8_t val;
 
     if (module == RC522_1) {
-        while (SSI1_SR_R & SSI_SR_RNE) { (void)SSI1_DR_R; }
+        while (SSI1_SR_R & SSI_SR_RNE) {
+            (void)SSI1_DR_R;
+        }
         setPinValue(RC1FSS, 0);
         waitMicrosecond(1);
-        spi1Transfer(addr);          // fixed
-        val = spi1Transfer(0x00);    // fixed
+        spi1Transfer(addr);       // fixed
+        val = spi1Transfer(0x00); // fixed
         waitMicrosecond(1);
         setPinValue(RC1FSS, 1);
     } else {
-        while (SSI2_SR_R & SSI_SR_RNE) { (void)SSI2_DR_R; }
+        while (SSI2_SR_R & SSI_SR_RNE) {
+            (void)SSI2_DR_R;
+        }
         setPinValue(RC2FSS, 0);
-        waitMicrosecond(1);          // add for symmetry with module 1
+        waitMicrosecond(1); // add for symmetry with module 1
         spi2Transfer(addr);
         val = spi2Transfer(0x00);
         waitMicrosecond(1);
@@ -284,7 +290,7 @@ uint8_t rcReadReg(uint8_t module, uint8_t reg) {
 //-----------------------------------------------------------------------------
 // RC522 TRANSMISSION
 //-----------------------------------------------------------------------------
-#define VersionReg  0x37    // RC522 silicon version
+#define VersionReg 0x37 // RC522 silicon version
 
 uint8_t rc522GetVersion(uint8_t module) {
     return rcReadReg(module, VersionReg);
@@ -294,14 +300,17 @@ uint8_t rc522GetVersion(uint8_t module) {
 // Returns true if SPI is wired and clocking properly.
 bool rc522SpiSelfTest(uint8_t module) {
     uint8_t v = rcReadReg(module, VersionReg);
-    if (v == 0x00 || v == 0xFF) return false;   // bus dead or floating
+    if (v == 0x00 || v == 0xFF)
+        return false; // bus dead or floating
 
     // TReloadRegL is freely R/W and not latched in active use here
     uint8_t orig = rcReadReg(module, TReloadRegL);
     rcWriteReg(module, TReloadRegL, 0xA5);
-    if (rcReadReg(module, TReloadRegL) != 0xA5) return false;
+    if (rcReadReg(module, TReloadRegL) != 0xA5)
+        return false;
     rcWriteReg(module, TReloadRegL, 0x5A);
-    if (rcReadReg(module, TReloadRegL) != 0x5A) return false;
+    if (rcReadReg(module, TReloadRegL) != 0x5A)
+        return false;
     rcWriteReg(module, TReloadRegL, orig);
     return true;
 }
@@ -463,7 +472,7 @@ uint8_t rc522Request(uint8_t module, uint8_t reqMode, uint8_t *tagType) {
         status = STATUS_ERR;
     }
 
-    //rcWriteReg(module, BitFramingReg, 0x00); //-> chat
+    // rcWriteReg(module, BitFramingReg, 0x00); //-> chat
     return status;
 }
 
@@ -705,57 +714,60 @@ int8_t readRFID(char *name) {
         uint8_t blockInSector = j % 4;
 
         // Re-authenticate whenever we enter a new sector
-        // if (sector != lastSector) {
-        //     status = rc522Auth(RC522_1, PICC_MF_AUTH_KEY_A, j,
-        //                        (uint8_t *)defaultKeyA, serNum);
-        //     if (status != STATUS_OK) {
-        //         // Auth failed => skip the rest of this sector
-        //         j += (3u - blockInSector); // advance to last block of sector
-        //         continue;
-        //     }
-        //     lastSector = sector;
-        // }
         if (sector != lastSector) {
-            uint8_t workingKey[6];
-            uint8_t workingKeyType;
-        
-            // First try the default key directly — fast path for blank cards
             status = rc522Auth(RC522_1, PICC_MF_AUTH_KEY_A, j,
                                (uint8_t *)defaultKeyA, serNum);
-        
             if (status != STATUS_OK) {
-                // Default failed — recover state and run the dictionary
-                rc522StopCrypto(RC522_1);
-                rc522HaltA(RC522_1);
-                waitMicrosecond(1000);
-        
-                uint8_t atqa[2];
-                if (rc522Request(RC522_1, PICC_REQA, atqa) != STATUS_OK) {
-                    j += (3u - blockInSector);
-                    continue;
-                }
-                if (rc522Anticoll(RC522_1, serNum) != STATUS_OK) {
-                    j += (3u - blockInSector);
-                    continue;
-                }
-                rc522SelectTag(RC522_1, serNum);
-        
-                if (tryKnownKeys(RC522_1, j, serNum,
-                                 workingKey, &workingKeyType) < 0) {
-                    // No key worked — DEFAULT BEHAVIOR: zero the block, mark unread
-                    for (i = 0; i < BLOCK_SIZE; i++) {
-                        rfidTable[entryIdx].blocks[blockCount].data[i] = 0x00;
-                    }
-                    rfidTable[entryIdx].blocks[blockCount].addr = j | 0x80;  // high bit = "auth failed"
-                    blockCount++;
-                    j += (3u - blockInSector);
-                    continue;
-                }
-                // tryKnownKeys leaves us authenticated for this sector
-                status = STATUS_OK;
+                // Auth failed => skip the rest of this sector
+                j += (3u - blockInSector); // advance to last block of sector
+                continue;
             }
             lastSector = sector;
         }
+
+        // if (sector != lastSector) {
+        //     uint8_t workingKey[6];
+        //     uint8_t workingKeyType;
+        //
+        //     // First try the default key directly — fast path for blank cards
+        //     status = rc522Auth(RC522_1, PICC_MF_AUTH_KEY_A, j,
+        //                        (uint8_t *)defaultKeyA, serNum);
+        //
+        //     if (status != STATUS_OK) {
+        //         // Default failed — recover state and run the dictionary
+        //         rc522StopCrypto(RC522_1);
+        //         rc522HaltA(RC522_1);
+        //         waitMicrosecond(1000);
+        //
+        //         uint8_t atqa[2];
+        //         if (rc522Request(RC522_1, PICC_REQA, atqa) != STATUS_OK) {
+        //             j += (3u - blockInSector);
+        //             continue;
+        //         }
+        //         if (rc522Anticoll(RC522_1, serNum) != STATUS_OK) {
+        //             j += (3u - blockInSector);
+        //             continue;
+        //         }
+        //         rc522SelectTag(RC522_1, serNum);
+        //
+        //         if (tryKnownKeys(RC522_1, j, serNum, workingKey,
+        //                          &workingKeyType) < 0) {
+        //             // No key worked — DEFAULT BEHAVIOR: zero the block, mark
+        //             // unread
+        //             for (i = 0; i < BLOCK_SIZE; i++) {
+        //                 rfidTable[entryIdx].blocks[blockCount].data[i] = 0x00;
+        //             }
+        //             rfidTable[entryIdx].blocks[blockCount].addr =
+        //                 j | 0x80; // high bit = "auth failed"
+        //             blockCount++;
+        //             j += (3u - blockInSector);
+        //             continue;
+        //         }
+        //         // tryKnownKeys leaves us authenticated for this sector
+        //         status = STATUS_OK;
+        //     }
+        //     lastSector = sector;
+        // }
 
         // Block 3 of every sector is the sector trailer (keys + access bits)
         if (blockInSector == 3) {
