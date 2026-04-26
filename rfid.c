@@ -29,7 +29,80 @@ static const uint8_t defaultKeyA[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 //-----------------------------------------------------------------------------
 // SPI INITIALIZATIONS
 //-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+// Known-keys dictionary for MIFARE Classic
+//-----------------------------------------------------------------------------
+static const uint8_t knownKeys[][6] = {
+    {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF},  // factory default
+    {0x00, 0x00, 0x00, 0x00, 0x00, 0x00},  // all-zero
+    {0xA0, 0xA1, 0xA2, 0xA3, 0xA4, 0xA5},  // MAD key A (sector 0)
+    {0xD3, 0xF7, 0xD3, 0xF7, 0xD3, 0xF7},  // NDEF public key
+    {0xB0, 0xB1, 0xB2, 0xB3, 0xB4, 0xB5},  // common transit
+    {0x4D, 0x3A, 0x99, 0xC3, 0x51, 0xDD},  // common
+    {0x1A, 0x98, 0x2C, 0x7E, 0x45, 0x9A},  // common
+    {0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF},  // common pattern
+    {0x71, 0x4C, 0x5C, 0x88, 0x6E, 0x97},  // common
+    {0x58, 0x7E, 0xE5, 0xF9, 0x35, 0x0F},  // common
+    {0xA0, 0x47, 0x8C, 0xC3, 0x90, 0x91},  // common
+    {0x53, 0x3C, 0xB6, 0xC7, 0x23, 0xF6},  // common
+    {0x8F, 0xD0, 0xA4, 0xF2, 0x56, 0xE9},  // common
+    {0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC},  // weak
+    {0x11, 0x11, 0x11, 0x11, 0x11, 0x11},  // weak repeat
+    {0x22, 0x22, 0x22, 0x22, 0x22, 0x22},  // weak repeat
+    {0x33, 0x33, 0x33, 0x33, 0x33, 0x33},  // weak repeat
+    {0x44, 0x44, 0x44, 0x44, 0x44, 0x44},  // weak repeat
+    {0x55, 0x55, 0x55, 0x55, 0x55, 0x55},  // weak repeat
+    {0x66, 0x66, 0x66, 0x66, 0x66, 0x66},  // weak repeat
+};
+#define KNOWN_KEY_COUNT (sizeof(knownKeys) / sizeof(knownKeys[0]))
+//-----------------------------------------------------------------------------
+// tryKnownKeys() — dictionary attack against one sector
+//
+// blockAddr  : any block within the target sector (typically sector*4)
+// serNum     : 4-byte UID + BCC (already obtained from anticoll)
+// outKey     : on success, filled with the working 6-byte key
+// outKeyType : on success, set to PICC_MF_AUTH_KEY_A or PICC_MF_AUTH_KEY_B
+//
+// Returns: index into knownKeys[] of the working key, or -1 if none succeed.
+//
+// NOTE: a failed auth leaves the chip in a state where the next operation
+// can misbehave; we explicitly stop crypto and re-select between attempts.
+//-----------------------------------------------------------------------------
+int8_t tryKnownKeys(uint8_t module, uint8_t blockAddr, uint8_t *serNum,
+                    uint8_t *outKey, uint8_t *outKeyType) {
+    uint8_t i, j, status;
+    uint8_t keyModes[2] = {PICC_MF_AUTH_KEY_A, PICC_MF_AUTH_KEY_B};
 
+    for (i = 0; i < KNOWN_KEY_COUNT; i++) {
+        for (j = 0; j < 2; j++) {
+            status = rc522Auth(module, keyModes[j], blockAddr,
+                               (uint8_t *)knownKeys[i], serNum);
+            if (status == STATUS_OK) {
+                // Copy working key out
+                uint8_t k;
+                for (k = 0; k < 6; k++) {
+                    outKey[k] = knownKeys[i][k];
+                }
+                *outKeyType = keyModes[j];
+                return (int8_t)i;
+            }
+
+            // Auth failed — recover chip state before next attempt.
+            // After a failed MIFARE auth the card drops out of active state,
+            // so we must REQA + Anticoll + Select again before retrying.
+            rc522StopCrypto(module);
+            rc522HaltA(module);
+            waitMicrosecond(1000);
+
+            uint8_t atqa[2];
+            uint8_t tmpSer[5];
+            if (rc522Request(module, PICC_REQA, atqa) != STATUS_OK) continue;
+            if (rc522Anticoll(module, tmpSer) != STATUS_OK) continue;
+            rc522SelectTag(module, tmpSer);
+        }
+    }
+    return -1;
+}
 void initRC() {
     initSystemClockTo40Mhz();
 
