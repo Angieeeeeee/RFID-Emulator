@@ -118,5 +118,32 @@ extern uint8_t  rfidCount;
 // Subroutines
 //-----------------------------------------------------------------------------
 
+void initRC(); // USE IN MAIN
+void initSpi1(void);
+void setSpi1BaudRate(uint32_t baudRate, uint32_t fcyc);
+void initSpi2(void);
+void setSpi2BaudRate(uint32_t baudRate, uint32_t fcyc);
+
+static uint8_t spi1Transfer(uint8_t txByte);
+static uint8_t spi2Transfer(uint8_t txByte);
+void rcWriteReg(uint8_t module, uint8_t reg, uint8_t val);
+uint8_t rcReadReg(uint8_t module, uint8_t reg);
+
+void rcSetBitMask(uint8_t module, uint8_t reg, uint8_t mask);
+void rcClearBitMask(uint8_t module, uint8_t reg, uint8_t mask);
+void rc522Init(uint8_t module);
+void rc522CalcCRC(uint8_t module, uint8_t *pIn, uint8_t len, uint8_t *pOut);
+uint8_t rc522ToCard(uint8_t module, uint8_t cmd, uint8_t *sendData, uint8_t sendLen, uint8_t *backData, uint16_t *backLen);
+uint8_t rc522Request(uint8_t module, uint8_t reqMode, uint8_t *tagType);
+uint8_t rc522Anticoll(uint8_t module, uint8_t *serNum);
+uint8_t rc522SelectTag(uint8_t module, uint8_t *serNum);
+uint8_t rc522Auth(uint8_t module, uint8_t authMode, uint8_t blockAddr, uint8_t *sectorKey, uint8_t *serNum);
+uint8_t rc522ReadBlock(uint8_t module, uint8_t blockAddr, uint8_t *recvData);
+uint8_t rc522WriteBlock(uint8_t module, uint8_t blockAddr, uint8_t *writeData);
+void rc522HaltA(uint8_t module);
+void rc522StopCrypto(uint8_t module);
+
+int8_t readRFID(char *name); //USE IN MAIN
+uint8_t writeRFID(uint32_t selectedId); //USE IN MAIN
 
 #endif

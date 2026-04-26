@@ -631,7 +631,7 @@ uint8_t writeRFID(uint32_t selectedId)
     uint8_t i;
     int8_t  entryIdx = -1;
 
-    // ── Step 1: locate the table entry ────────────────────────────────────
+    // locate the key in table
     for (i = 0; i < MAX_RFID_ENTRIES; i++) {
         if (rfidTable[i].hasData && rfidTable[i].id == selectedId) {
             entryIdx = (int8_t)i;
