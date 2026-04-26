@@ -149,7 +149,7 @@ uint8_t rc522WriteBlock(uint8_t module, uint8_t blockAddr, uint8_t *writeData);
 void rc522HaltA(uint8_t module);
 void rc522StopCrypto(uint8_t module);
 
-int8_t readRFID(char *name); //USE IN MAIN
+int8_t readRFID(); //USE IN MAIN
 uint8_t writeRFID(uint32_t selectedId); //USE IN MAIN
 
 #endif

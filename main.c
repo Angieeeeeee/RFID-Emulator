@@ -2,10 +2,10 @@
 #include "display_lib.h"
 #include "gpio.h"
 #include "rfid.h"
-#include <stdio.h>
 #include "tm4c123gh6pm.h"
 #include "wait.h"
 #include <stdint.h>
+#include <stdio.h>
 
 #define UP_PB 4
 #define DOW_PB 5
@@ -77,22 +77,23 @@ void Read_Key() {
     ST7735_SetCursor(6, 6);
     ST7735_OutString("Reading...");
     waitMicrosecond(1e6);
-    int8_t key_index = readRFID("test1");
+    int8_t key_index = readRFID();
     if (key_index >= 0) {
         Output_Clear();
+        waitMicrosecond(1e5);
         ST7735_SetCursor(1, 6);
-        ST7735_OutString("Key ");
         ST7735_OutString(rfidTable[key_index].name);
         ST7735_OutString(" Read");
 
-    }else if(key_index == -1)
-    {
+    } else if (key_index == -1) {
         Output_Clear();
+        waitMicrosecond(1e5);
         ST7735_SetCursor(4, 6);
         ST7735_OutString("No Tag Detected");
 
-    }else{
+    } else {
         Output_Clear();
+        waitMicrosecond(1e5);
         ST7735_SetCursor(6, 6);
         ST7735_OutString("No Space\n");
         ST7735_OutString("Delete a Key\n");
@@ -108,8 +109,9 @@ void Write_Key() {
     Output_Clear();
     ST7735_SetCursor(3, 1);
     ST7735_OutString("---Key Menu---");
-    // here we would display all keys that we have
-    // loop over the keys and implement the select
+    // rfidTable[key_index].name
+    //  here we would display all keys that we have
+    //  loop over the keys and implement the select
     Output_Clear();
 }
 
@@ -118,6 +120,17 @@ void Delete_Key() {
     Output_Clear();
     ST7735_SetCursor(3, 1);
     ST7735_OutString("---Key Menu---");
+    int8_t i = 0;
+    for(; i < MAX_RFID_ENTRIES; ++i){
+        if(rfidTable[i].hasData == 1){
+            ST7735_SetCursor(1, 4+i*2);
+            ST7735_OutString(rfidTable[i].name);
+        }
+    }
+    arrow_pos = 0;
+    draw_arrow(arrow_pos);
+    while(1);
+
     // here we would display all keys that we have
     // loop over the keys and implement the select
     Output_Clear();
@@ -138,8 +151,10 @@ void menu_controller() {
     switch (arrow_pos) {
     case 0:
         Read_Key();
+        break;
     case 1:;
         Write_Key();
+           break;
     default:
         Delete_Key();
     }
@@ -156,29 +171,31 @@ int main(void) {
     initRC();
     // bool test = rc522SpiSelfTest(RC522_1);
 
-     Output_Init();
-     ST7735_SetRotation(1);
-     ST7735_SetTextColor(ST7735_GREEN);
-     waitMicrosecond(1e6);
+    Output_Init();
+    ST7735_SetRotation(1);
+    ST7735_SetTextColor(ST7735_GREEN);
+    waitMicrosecond(1e6);
 
- reset:
-     main_menu();
-     draw_arrow(arrow_pos);
+reset:
+    Output_Clear();
+    waitMicrosecond(1e5);
+    main_menu();
+    draw_arrow(arrow_pos);
 
-     while (1) {
+    while (1) {
 
-         if (!getPinValue(PORTC, UP_PB)) {
-             update_arrow_pos(1);
-             checkButtonDebounced(UP_PB);
+        if (!getPinValue(PORTC, UP_PB)) {
+            update_arrow_pos(1);
+            checkButtonDebounced(UP_PB);
 
-         } else if (!getPinValue(PORTC, DOW_PB)) {
-             update_arrow_pos(-1);
-             checkButtonDebounced(DOW_PB);
+        } else if (!getPinValue(PORTC, DOW_PB)) {
+            update_arrow_pos(-1);
+            checkButtonDebounced(DOW_PB);
 
-         } else if (!getPinValue(PORTC, OK_PB)) {
-             menu_controller();
-             checkButtonDebounced(OK_PB);
-             goto reset;
-         }
-     }
+        } else if (!getPinValue(PORTC, OK_PB)) {
+            menu_controller();
+            checkButtonDebounced(OK_PB);
+            goto reset;
+        }
+    }
 }

@@ -22,6 +22,8 @@
 #include "tm4c123gh6pm.h"
 #include "wait.h"
 #include <stdint.h>
+#include <stdio.h>
+#include <string.h>
 
 RFIDdata rfidTable[MAX_RFID_ENTRIES];
 uint8_t rfidCount = 0;
@@ -42,12 +44,16 @@ void initRC() {
     initSpi1();
     disablePinPulldown(PORTD, 2);   // MISO must float, then SSI takes over
     disablePinPullup(PORTD, 2);
-    //initSpi2();
+
+    initSpi2();
+    disablePinPulldown(PORTB, 6);   // MISO must float, then SSI takes over
+    disablePinPullup(PORTB, 6);
+
     setSpi1BaudRate(100000, 40000000);
-    //setSpi2BaudRate(100000, 40000000);
+    setSpi2BaudRate(100000, 40000000);
 
     rc522Init(RC522_1);
-    //rc522Init(RC522_2);
+    rc522Init(RC522_2);
 
     // empty table
     int i;
@@ -562,7 +568,7 @@ void rc522StopCrypto(uint8_t module) {
  * data blocks.  Block 0 of sector 0 (manufacturer block) is included for
  * storage completeness but will be skipped during writeRFID.
  */
-int8_t readRFID(char *name) {
+int8_t readRFID() {
     uint8_t status;
     uint8_t atqa[2];      // Answer To reQuest type A (2 bytes)
     uint8_t serNum[5];    // UID bytes [0..3] + BCC
@@ -593,6 +599,7 @@ int8_t readRFID(char *name) {
     for (i = 0; i < MAX_RFID_ENTRIES; i++) {
         if (rfidTable[i].hasData &&
             rfidTable[i].id == newId) { // already exists in table
+            --rfidCount;
             entryIdx = (int8_t)i;
             break;
         }
@@ -618,6 +625,11 @@ int8_t readRFID(char *name) {
     }
 
     // Copy name safely
+    char name[16] = "key ";
+    char buf[3] = {0};
+    sprintf(buf,"%d", rfidCount);
+    strcat(name,buf);
+
     for (i = 0; i < 29 && name[i] != '\0'; i++) {
         rfidTable[entryIdx].name[i] = name[i];
     }
