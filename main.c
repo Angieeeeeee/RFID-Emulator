@@ -7,6 +7,8 @@
 
 #define UP_PB 0
 #define DOW_PB 1
+#define OK_PB 2
+
 uint8_t arrow_pos = 0;
 // cursor movement
 // x: 0 to 20
@@ -45,7 +47,7 @@ void update_arrow_pos(int8_t pos) {
     draw_arrow(arrow_pos);
 }
 
-void menu_text() {
+void main_menu() {
 
     ST7735_SetCursor(3, 1);
     ST7735_OutString("--- Main Menu ---");
@@ -55,6 +57,18 @@ void menu_text() {
     ST7735_OutString("Write Key");
     ST7735_SetCursor(1, 8);
     ST7735_OutString("Delete Key");
+}
+
+void Read_Key(){
+
+    Output_Clear();
+    ST7735_SetCursor(6, 6);
+    ST7735_OutString("Reading...");
+    waitMicrosecond(2e6);
+    //here we would
+    //wait(success)
+    //then go back
+    Output_Clear();
 }
 
 void checkButtonDebounced(uint8_t PB) {
@@ -69,17 +83,31 @@ void checkButtonDebounced(uint8_t PB) {
     }
 }
 
+void menu_controller(){
+    switch (arrow_pos) {
+        case 0:
+            Read_Key();
+        case 1:;
+        default:;
+    }
+}
+
+
+
+
 int main(void) {
     initSystemClockTo40Mhz();
     enablePort(PORTD);
     selectPinDigitalInput(PORTD, UP_PB);
     selectPinDigitalInput(PORTD, DOW_PB);
+    selectPinDigitalInput(PORTD, OK_PB);
 
     Output_Init();
     ST7735_SetRotation(1);
     ST7735_SetTextColor(ST7735_GREEN);
 
-    menu_text();
+reset:
+    main_menu();
     draw_arrow(arrow_pos);
 
     while (1) {
@@ -91,6 +119,11 @@ int main(void) {
         } else if (!getPinValue(PORTD, DOW_PB)) {
             update_arrow_pos(-1);
             checkButtonDebounced(DOW_PB);
+
+        } else if (!getPinValue(PORTD, OK_PB)) {
+            menu_controller();
+            checkButtonDebounced(OK_PB);
+            goto reset;
         }
     }
 }
