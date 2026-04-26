@@ -2,6 +2,7 @@
 "./display_lib.obj"
 "./gpio.obj"
 "./main.obj"
+"./rfid.obj"
 "./tm4c123gh6pm_startup_ccs.obj"
 "./wait.obj"
 "../tm4c123gh6pm.cmd"

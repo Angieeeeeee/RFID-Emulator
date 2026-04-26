@@ -15,7 +15,11 @@ main.obj: /Applications/ti/ccs1280/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/incl
 main.obj: /Applications/ti/ccs1280/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/sys/_stdint.h
 main.obj: ../gpio.h
 main.obj: /Applications/ti/ccs1280/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stdbool.h
+main.obj: ../rfid.h
+main.obj: /Applications/ti/ccs1280/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stdlib.h
 main.obj: ../tm4c123gh6pm.h
+main.obj: /Applications/ti/ccs1280/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stdio.h
+main.obj: /Applications/ti/ccs1280/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stdarg.h
 main.obj: ../wait.h
 
 ../main.c:
@@ -48,7 +52,15 @@ main.obj: ../wait.h
 
 /Applications/ti/ccs1280/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stdbool.h:
 
+../rfid.h:
+
+/Applications/ti/ccs1280/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stdlib.h:
+
 ../tm4c123gh6pm.h:
+
+/Applications/ti/ccs1280/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stdio.h:
+
+/Applications/ti/ccs1280/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stdarg.h:
 
 ../wait.h:
 

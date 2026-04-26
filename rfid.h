@@ -18,6 +18,7 @@
 
 // WIRIGN
 
+
 // RC522_1 (SSI1)
 #define RC1TX   PORTD,3     // SSI1Tx  (MOSI)
 #define RC1RX   PORTD,2     // SSI1Rx  (MISO)
@@ -113,6 +114,9 @@ extern uint8_t  rfidCount;
 #define RC522_1   1     // reader
 #define RC522_2   2     // writer
 
+#define STATUS_OK 0
+#define STATUS_ERR 1
+#define STATUS_NOTAGERR 2
 
 //-----------------------------------------------------------------------------
 // Subroutines

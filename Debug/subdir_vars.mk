@@ -14,6 +14,7 @@ C_SRCS += \
 ../display_lib.c \
 ../gpio.c \
 ../main.c \
+../rfid.c \
 ../tm4c123gh6pm_startup_ccs.c 
 
 S_DEPS += \
@@ -24,6 +25,7 @@ C_DEPS += \
 ./display_lib.d \
 ./gpio.d \
 ./main.d \
+./rfid.d \
 ./tm4c123gh6pm_startup_ccs.d 
 
 OBJS += \
@@ -31,6 +33,7 @@ OBJS += \
 ./display_lib.obj \
 ./gpio.obj \
 ./main.obj \
+./rfid.obj \
 ./tm4c123gh6pm_startup_ccs.obj \
 ./wait.obj 
 
@@ -39,6 +42,7 @@ OBJS__QUOTED += \
 "display_lib.obj" \
 "gpio.obj" \
 "main.obj" \
+"rfid.obj" \
 "tm4c123gh6pm_startup_ccs.obj" \
 "wait.obj" 
 
@@ -47,6 +51,7 @@ C_DEPS__QUOTED += \
 "display_lib.d" \
 "gpio.d" \
 "main.d" \
+"rfid.d" \
 "tm4c123gh6pm_startup_ccs.d" 
 
 S_DEPS__QUOTED += \
@@ -57,6 +62,7 @@ C_SRCS__QUOTED += \
 "../display_lib.c" \
 "../gpio.c" \
 "../main.c" \
+"../rfid.c" \
 "../tm4c123gh6pm_startup_ccs.c" 
 
 S_SRCS__QUOTED += \

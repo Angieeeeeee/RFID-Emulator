@@ -1,6 +1,8 @@
 #include "clock.h"
 #include "display_lib.h"
 #include "gpio.h"
+#include "rfid.h"
+#include <stdio.h>
 #include "tm4c123gh6pm.h"
 #include "wait.h"
 #include <stdint.h>
@@ -10,19 +12,20 @@
 #define OK_PB 6
 
 uint8_t arrow_pos = 0;
+
 // cursor movement
 // x: 0 to 20
 // y: 0 to 15
 
-//Screen
-//PA2 : SCL
-//PA3 : CS
-//PA5 : SDA
-//PA6 : DC
-//PA7 : RES
+// Screen
+// PA2 : SCL
+// PA3 : CS
+// PA5 : SDA
+// PA6 : DC
+// PA7 : RES
 //
-//PD0-3 : SPI1
-//PB4-7 : SPI2
+// PD0-3 : SPI1
+// PB4-7 : SPI2
 
 void draw_arrow(uint8_t pos) {
     // 3 positions 0,1,2.
@@ -31,7 +34,7 @@ void draw_arrow(uint8_t pos) {
     ST7735_OutString("<--");
 }
 
-void delete_arrow(){
+void delete_arrow() {
     ST7735_SetCursor(13, 4 + arrow_pos * 2);
     ST7735_OutString("   ");
 }
@@ -40,14 +43,14 @@ void update_arrow_pos(int8_t pos) {
 
     delete_arrow();
 
-    if (pos == -1){
+    if (pos == -1) {
         if (arrow_pos == 2)
             arrow_pos = 0;
         else
             ++arrow_pos;
 
-    }else{
-        if(arrow_pos == 0)
+    } else {
+        if (arrow_pos == 0)
             arrow_pos = 2;
         else
             --arrow_pos;
@@ -68,76 +71,93 @@ void main_menu() {
     ST7735_OutString("Delete Key");
 }
 
-void Read_Key(){
+void Read_Key() {
 
     Output_Clear();
     ST7735_SetCursor(6, 6);
     ST7735_OutString("Reading...");
+    waitMicrosecond(1e6);
+    int8_t key_index = readRFID("test1");
+    if (key_index >= 0) {
+        Output_Clear();
+        ST7735_SetCursor(1, 6);
+        ST7735_OutString("Key ");
+        ST7735_OutString(rfidTable[key_index].name);
+        ST7735_OutString(" Read");
+
+    }else if(key_index == -1)
+    {
+        Output_Clear();
+        ST7735_SetCursor(4, 6);
+        ST7735_OutString("No Tag Detected");
+
+    }else{
+        Output_Clear();
+        ST7735_SetCursor(6, 6);
+        ST7735_OutString("No Space\n");
+        ST7735_OutString("Delete a Key\n");
+    }
+
     waitMicrosecond(2e6);
-    //here we would
-    //wait(success)
-    //then go back
     Output_Clear();
 }
 
-//TODO: both write and delete key will print the same key menu
-void Write_Key(){
+// TODO: both write and delete key will print the same key menu
+void Write_Key() {
 
     Output_Clear();
     ST7735_SetCursor(3, 1);
     ST7735_OutString("---Key Menu---");
-    //here we would display all keys that we have
-    //loop over the keys and implement the select
+    // here we would display all keys that we have
+    // loop over the keys and implement the select
     Output_Clear();
-
 }
 
-void Delete_Key(){
+void Delete_Key() {
 
     Output_Clear();
     ST7735_SetCursor(3, 1);
     ST7735_OutString("---Key Menu---");
-    //here we would display all keys that we have
-    //loop over the keys and implement the select
+    // here we would display all keys that we have
+    // loop over the keys and implement the select
     Output_Clear();
-
 }
 void checkButtonDebounced(uint8_t PB) {
 
     waitMicrosecond(1e5);
-    while(1){
+    while (1) {
         if (getPinValue(PORTC, PB)) {
             waitMicrosecond(2e3);
-            if(getPinValue(PORTC, PB))
+            if (getPinValue(PORTC, PB))
                 break;
         }
     }
 }
 
-void menu_controller(){
+void menu_controller() {
     switch (arrow_pos) {
-        case 0:
-            Read_Key();
-        case 1:;
-            Write_Key();
-        default:
-            Delete_Key();
+    case 0:
+        Read_Key();
+    case 1:;
+        Write_Key();
+    default:
+        Delete_Key();
     }
 }
-
-
-
 
 int main(void) {
     initSystemClockTo40Mhz();
     enablePort(PORTC);
+
     selectPinDigitalInput(PORTC, UP_PB);
     selectPinDigitalInput(PORTC, DOW_PB);
     selectPinDigitalInput(PORTC, OK_PB);
 
+    initRC();
     Output_Init();
     ST7735_SetRotation(1);
     ST7735_SetTextColor(ST7735_GREEN);
+    waitMicrosecond(1e6);
 
 reset:
     main_menu();
@@ -160,10 +180,3 @@ reset:
         }
     }
 }
-
-
-
-
-
-
-
