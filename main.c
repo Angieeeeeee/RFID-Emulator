@@ -71,6 +71,28 @@ void Read_Key(){
     Output_Clear();
 }
 
+//TODO: both write and delete key will print the same key menu
+void Write_Key(){
+
+    Output_Clear();
+    ST7735_SetCursor(3, 1);
+    ST7735_OutString("---Key Menu---");
+    //here we would display all keys that we have
+    //loop over the keys and implement the select
+    Output_Clear();
+
+}
+
+void Delete_Key(){
+
+    Output_Clear();
+    ST7735_SetCursor(3, 1);
+    ST7735_OutString("---Key Menu---");
+    //here we would display all keys that we have
+    //loop over the keys and implement the select
+    Output_Clear();
+
+}
 void checkButtonDebounced(uint8_t PB) {
 
     waitMicrosecond(1e5);
@@ -88,7 +110,9 @@ void menu_controller(){
         case 0:
             Read_Key();
         case 1:;
-        default:;
+            Write_Key();
+        default:
+            Delete_Key();
     }
 }
 
@@ -127,4 +151,10 @@ reset:
         }
     }
 }
+
+
+
+
+
+
 
