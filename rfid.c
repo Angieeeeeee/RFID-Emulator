@@ -40,6 +40,8 @@ void initRC() {
 
     // init SPI
     initSpi1();
+    disablePinPulldown(PORTD, 2);   // MISO must float, then SSI takes over
+    disablePinPullup(PORTD, 2);
     //initSpi2();
     setSpi1BaudRate(100000, 40000000);
     //setSpi2BaudRate(100000, 40000000);
