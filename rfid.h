@@ -136,6 +136,8 @@ uint8_t rcReadReg(uint8_t module, uint8_t reg);
 void rcSetBitMask(uint8_t module, uint8_t reg, uint8_t mask);
 void rcClearBitMask(uint8_t module, uint8_t reg, uint8_t mask);
 void rc522Init(uint8_t module);
+bool rc522SpiSelfTest(uint8_t module);
+uint8_t rc522GetVersion(uint8_t module);
 void rc522CalcCRC(uint8_t module, uint8_t *pIn, uint8_t len, uint8_t *pOut);
 uint8_t rc522ToCard(uint8_t module, uint8_t cmd, uint8_t *sendData, uint8_t sendLen, uint8_t *backData, uint16_t *backLen);
 uint8_t rc522Request(uint8_t module, uint8_t reqMode, uint8_t *tagType);
