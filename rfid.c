@@ -28,6 +28,7 @@
 RFIDdata rfidTable[MAX_RFID_ENTRIES];
 uint8_t rfidCount = 0;
 static const uint8_t defaultKeyA[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+
 //-----------------------------------------------------------------------------
 // SPI INITIALIZATIONS
 //-----------------------------------------------------------------------------
@@ -84,13 +85,12 @@ void initSpi1(void) {
     selectPinDigitalInput(RC1RX);
     setPinAuxFunction(RC1RX, GPIO_PCTL_PD2_SSI1RX);
 
-    // Configure the SSI1 as a SPI master, mode 3, 8bit operation
+    // Configure the SSI1 as a SPI master, mode 0, 8bit operation
     SSI1_CR1_R &= ~SSI_CR1_SSE;   // disable while configuring
     SSI1_CR1_R = 0;               // master mode
     SSI1_CC_R = 0;                // system clock source
     SSI1_CR0_R = SSI_CR0_FRF_MOTO // Motorola SPI frame format
                  | SSI_CR0_DSS_8; // 8-bit data (SPO=0, SPH=0 default)
-    // SSI1_CR0_R &= ~(0b11<<6);
 }
 
 void setSpi1BaudRate(uint32_t baudRate, uint32_t fcyc) {
@@ -125,7 +125,6 @@ void initSpi2(void) {
     SSI2_CR1_R = 0;
     SSI2_CC_R = 0;
     SSI2_CR0_R = SSI_CR0_FRF_MOTO | SSI_CR0_DSS_8;
-    // SSI2_CR0_R &= ~(0b11<<6);
 }
 
 void setSpi2BaudRate(uint32_t baudRate, uint32_t fcyc) {
@@ -170,22 +169,20 @@ void rcWriteReg(uint8_t module, uint8_t reg, uint8_t val) {
     uint8_t addr = (reg << 1) & 0x7E; // when bit 7 is 0, write. bit 0 is 0
 
     if (module == RC522_1) {
-        while (SSI1_SR_R & SSI_SR_RNE) {
-            uint32_t dummy = SSI1_DR_R;
-        };
+        while (SSI1_SR_R & SSI_SR_RNE) { (void)SSI1_DR_R; }
         setPinValue(RC1FSS, 0); // CS assert
         waitMicrosecond(1);
         spi1Transfer(addr);     // address phase  (RX byte discarded)
-        spi1Transfer(val);      // data phase     (RX byte discarded
+        spi1Transfer(val);      // data phase     (RX byte discarded)
         waitMicrosecond(1);
         setPinValue(RC1FSS, 1); // CS deassert
-    } else {                    // if we wanna use rc2
-        while (SSI2_SR_R & SSI_SR_RNE) {
-            uint32_t dummy = SSI2_DR_R;
-        };
+    } else {
+        while (SSI2_SR_R & SSI_SR_RNE) { (void)SSI2_DR_R; }
         setPinValue(RC2FSS, 0);
+        waitMicrosecond(1);
         spi2Transfer(addr);
         spi2Transfer(val);
+        waitMicrosecond(1);
         setPinValue(RC2FSS, 1);
     }
 }
@@ -198,14 +195,14 @@ uint8_t rcReadReg(uint8_t module, uint8_t reg) {
         while (SSI1_SR_R & SSI_SR_RNE) { (void)SSI1_DR_R; }
         setPinValue(RC1FSS, 0);
         waitMicrosecond(1);
-        spi1Transfer(addr);          // fixed
-        val = spi1Transfer(0x00);    // fixed
+        spi1Transfer(addr);
+        val = spi1Transfer(0x00);
         waitMicrosecond(1);
         setPinValue(RC1FSS, 1);
     } else {
         while (SSI2_SR_R & SSI_SR_RNE) { (void)SSI2_DR_R; }
         setPinValue(RC2FSS, 0);
-        waitMicrosecond(1);          // add for symmetry with module 1
+        waitMicrosecond(1);
         spi2Transfer(addr);
         val = spi2Transfer(0x00);
         waitMicrosecond(1);
@@ -249,8 +246,7 @@ void rcClearBitMask(uint8_t module, uint8_t reg, uint8_t mask) {
     rcWriteReg(module, reg, rcReadReg(module, reg) & ~mask);
 }
 
-// module initialization cause guess what this is inception apparently and there
-// are registers inside registers
+// module initialization
 void rc522Init(uint8_t module) {
     rcWriteReg(module, CommandReg, PCD_SoftReset);
     waitMicrosecond(50000); // RC522 needs at least 37 ms after reset
@@ -270,7 +266,6 @@ void rc522Init(uint8_t module) {
     }
 }
 
-//
 void rc522CalcCRC(uint8_t module, uint8_t *pIn, uint8_t len, uint8_t *pOut) {
     uint8_t i, n;
 
@@ -334,9 +329,7 @@ uint8_t rc522ToCard(uint8_t module, uint8_t cmd, uint8_t *sendData,
         rcSetBitMask(module, BitFramingReg, 0x80); // StartSend = 1
     }
 
-    // Poll ComIrqReg until the expected IRQ fires or the hardware timer
-    // expires. At 1 MHz SPI each register read takes ~20 µs → 3000 iterations ≈
-    // 60 ms.
+    // Poll ComIrqReg until the expected IRQ fires or the hardware timer expires.
     i = 3000;
     do {
         n = rcReadReg(module, ComIrqReg);
@@ -349,8 +342,7 @@ uint8_t rc522ToCard(uint8_t module, uint8_t cmd, uint8_t *sendData,
         return STATUS_ERR;
     } // software timeout
 
-    // Check hardware error register (BufferOvfl | ColErr | CRCErr |
-    // ProtocolErr)
+    // Check hardware error register (BufferOvfl | ColErr | CRCErr | ProtocolErr)
     if (rcReadReg(module, ErrorReg) & 0x1B) {
         return STATUS_ERR;
     }
@@ -386,7 +378,7 @@ uint8_t rc522Request(uint8_t module, uint8_t reqMode, uint8_t *tagType) {
     uint8_t status;
 
     rcWriteReg(module, BitFramingReg,
-               0x07); // TxLastBits = 7 → 7-bit short frame
+               0x07); // TxLastBits = 7 -> 7-bit short frame
 
     tagType[0] = reqMode;
     status =
@@ -396,7 +388,6 @@ uint8_t rc522Request(uint8_t module, uint8_t reqMode, uint8_t *tagType) {
         status = STATUS_ERR;
     }
 
-    //rcWriteReg(module, BitFramingReg, 0x00); //-> chat
     return status;
 }
 
@@ -428,7 +419,7 @@ uint8_t rc522SelectTag(uint8_t module, uint8_t *serNum) {
     uint8_t buf[9];
 
     buf[0] = PICC_SEL_CL1;
-    buf[1] = 0x70; // NVB = 0x70 → all 5 UID bytes follow
+    buf[1] = 0x70; // NVB = 0x70 -> all 5 UID bytes follow
     for (i = 0; i < 5; i++) {
         buf[i + 2] = serNum[i];
     }
@@ -539,7 +530,6 @@ void rc522HaltA(uint8_t module) {
     buf[1] = 0x00;
     rc522CalcCRC(module, buf, 2, &buf[2]);
     rc522ToCard(module, PCD_Transceive, buf, 4, buf, &unLen);
-    // No status check — card is not required to reply
 }
 
 void rc522StopCrypto(uint8_t module) {
@@ -555,26 +545,144 @@ void rc522StopCrypto(uint8_t module) {
  * sector with the default Key A, read every data block (skipping sector
  * trailers), and store the result in rfidTable.
  *
- * Parameters:
- *   name  — null-terminated label for this tag (truncated to 29 chars)
- *
  * Returns:
  *   >= 0   table index of the stored entry (new or updated)
  *   -1     no tag detected
  *   -2     there is no space on table
  *
  * If the same UID is already in the table the existing entry is refreshed.
- * Reads blocks 0–63 (full MIFARE Classic 1K range) up to MAX_RFID_BLOCKS
- * data blocks.  Block 0 of sector 0 (manufacturer block) is included for
- * storage completeness but will be skipped during writeRFID.
  */
-// Distinct return codes so the caller can see where we failed.
-// 0 = OK, 1 = id not in table, 2 = no tag detected,
-// 3 = anticoll failed, 4 = auth failed, 5 = write failed
+int8_t readRFID() {
+    uint8_t status;
+    uint8_t atqa[2];      // Answer To reQuest type A (2 bytes)
+    uint8_t serNum[5];    // UID bytes [0..3] + BCC
+    uint8_t rawBlock[18]; // 16 data bytes + 2 CRC bytes
+    uint8_t i, j;
+    int8_t entryIdx = -1;
+    uint8_t lastSector = 0xFF;
+
+    // detect card
+    status = rc522Request(RC522_1, PICC_REQA, atqa);
+    if (status != STATUS_OK) {
+        return -1;
+    }
+
+    // resolve UID via anti-collision
+    status = rc522Anticoll(RC522_1, serNum);
+    if (status != STATUS_OK) {
+        return -1;
+    }
+
+    // pack 4-byte UID into uint32_t id
+    uint32_t newId = ((uint32_t)serNum[0] << 24) | ((uint32_t)serNum[1] << 16) |
+                     ((uint32_t)serNum[2] << 8) | (uint32_t)serNum[3];
+
+    rc522SelectTag(RC522_1, serNum);
+
+    // find place in table
+    for (i = 0; i < MAX_RFID_ENTRIES; i++) {
+        if (rfidTable[i].hasData &&
+            rfidTable[i].id == newId) { // already exists in table
+            --rfidCount;
+            entryIdx = (int8_t)i;
+            break;
+        }
+    }
+    if (entryIdx == -1) {
+        for (i = 0; i < MAX_RFID_ENTRIES; i++) { // empty spot
+            if (!rfidTable[i].hasData) {
+                entryIdx = (int8_t)i;
+                break;
+            }
+        }
+    }
+    if (entryIdx == -1) {
+        rc522HaltA(RC522_1);
+        return -2; // table full
+    }
+
+    // populate table
+    rfidTable[entryIdx].id = newId;
+    rfidTable[entryIdx].uidLength = 5; // 4 UID + 1 BCC
+    for (i = 0; i < 5; i++) {
+        rfidTable[entryIdx].uid[i] = serNum[i];
+    }
+
+    // Build the auto-generated name "key N"
+    char name[16] = "key ";
+    char buf[3] = {0};
+    sprintf(buf, "%d", rfidCount);
+    strcat(name, buf);
+
+    for (i = 0; i < 29 && name[i] != '\0'; i++) {
+        rfidTable[entryIdx].name[i] = name[i];
+    }
+    rfidTable[entryIdx].name[i] = '\0';
+
+    // MIFARE Classic 1K card: 16 sectors with 4 blocks, 16 bytes each
+    uint8_t blockCount = 0;
+
+    for (j = 0; j < 64 && blockCount < MAX_RFID_BLOCKS; j++) {
+        uint8_t sector = j / 4;
+        uint8_t blockInSector = j % 4;
+
+        // Re-authenticate whenever we enter a new sector
+        if (sector != lastSector) {
+            status = rc522Auth(RC522_1, PICC_MF_AUTH_KEY_A, j,
+                               (uint8_t *)defaultKeyA, serNum);
+            if (status != STATUS_OK) {
+                // Auth failed => skip the rest of this sector
+                j += (3u - blockInSector);
+                continue;
+            }
+            lastSector = sector;
+        }
+
+        // Block 3 of every sector is the sector trailer (keys + access bits)
+        if (blockInSector == 3) {
+            continue;
+        }
+
+        // Read 16-byte block (rawBlock[0..15] = data, [16..17] = CRC)
+        status = rc522ReadBlock(RC522_1, j, rawBlock);
+        if (status == STATUS_OK) {
+            rfidTable[entryIdx].blocks[blockCount].addr = j;
+            for (i = 0; i < BLOCK_SIZE; i++) {
+                rfidTable[entryIdx].blocks[blockCount].data[i] = rawBlock[i];
+            }
+            blockCount++;
+        }
+    }
+
+    rfidTable[entryIdx].blockCount = blockCount;
+    rfidTable[entryIdx].hasData = 1;
+    if (rfidCount < MAX_RFID_ENTRIES) {
+        rfidCount++;
+    }
+
+    rc522StopCrypto(RC522_1);
+    rc522HaltA(RC522_1);
+
+    return entryIdx;
+}
+
+/*
+ * writeRFID() — find the rfidTable entry matching selectedId and write all
+ * stored blocks onto a blank/writable tag presented to RC522_2.
+ *
+ * Distinct return codes so the caller can see where we failed:
+ *   0 = OK
+ *   1 = id not in table
+ *   2 = no tag detected on writer
+ *   3 = anticoll failed
+ *   4 = auth failed
+ *   5 = write failed
+ */
 uint8_t writeRFID(uint32_t selectedId) {
     uint8_t i;
     int8_t entryIdx = -1;
 
+    // locate the key in table
     for (i = 0; i < MAX_RFID_ENTRIES; i++) {
         if (rfidTable[i].hasData && rfidTable[i].id == selectedId) {
             entryIdx = (int8_t)i;
@@ -587,21 +695,29 @@ uint8_t writeRFID(uint32_t selectedId) {
     uint8_t atqa[2];
     uint8_t serNum[5];
 
+    // detect target tag
     status = rc522Request(RC522_2, PICC_REQA, atqa);
     if (status != STATUS_OK) return 2;
 
     status = rc522Anticoll(RC522_2, serNum);
     if (status != STATUS_OK) return 3;
 
+    // SELECT target tag
     rc522SelectTag(RC522_2, serNum);
 
+    // iterate over stored blocks and write each one
     uint8_t lastSector = 0xFF;
+
     for (i = 0; i < rfidTable[entryIdx].blockCount; i++) {
         uint8_t blockAddr = rfidTable[entryIdx].blocks[i].addr;
         uint8_t sector = blockAddr / 4;
 
-        if (blockAddr == 0) continue;
+        // Block 0 (manufacturer block) is permanently locked on real cards
+        if (blockAddr == 0) {
+            continue;
+        }
 
+        // Authenticate at the start of each new sector
         if (sector != lastSector) {
             status = rc522Auth(RC522_2, PICC_MF_AUTH_KEY_A, blockAddr,
                                (uint8_t *)defaultKeyA, serNum);
@@ -613,6 +729,7 @@ uint8_t writeRFID(uint32_t selectedId) {
             lastSector = sector;
         }
 
+        // Write the 16-byte block to the target card
         status = rc522WriteBlock(RC522_2, blockAddr,
                                  rfidTable[entryIdx].blocks[i].data);
         if (status != STATUS_OK) {
