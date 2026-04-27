@@ -568,119 +568,63 @@ void rc522StopCrypto(uint8_t module) {
  * data blocks.  Block 0 of sector 0 (manufacturer block) is included for
  * storage completeness but will be skipped during writeRFID.
  */
-int8_t readRFID() {
-    uint8_t status;
-    uint8_t atqa[2];      // Answer To reQuest type A (2 bytes)
-    uint8_t serNum[5];    // UID bytes [0..3] + BCC
-    uint8_t rawBlock[18]; // 16 data bytes + 2 CRC bytes
-    uint8_t i, j;
+// Distinct return codes so the caller can see where we failed.
+// 0 = OK, 1 = id not in table, 2 = no tag detected,
+// 3 = anticoll failed, 4 = auth failed, 5 = write failed
+uint8_t writeRFID(uint32_t selectedId) {
+    uint8_t i;
     int8_t entryIdx = -1;
-    uint8_t lastSector = 0xFF;
 
-    // detect card
-    status = rc522Request(RC522_1, PICC_REQA, atqa);
-    if (status != STATUS_OK) {
-        return -1;
-    }
-
-    // resolve UID via anti-collision
-    status = rc522Anticoll(RC522_1, serNum);
-    if (status != STATUS_OK) {
-        return -1;
-    }
-
-    // pack 4-byte UID into uint32_t id
-    uint32_t newId = ((uint32_t)serNum[0] << 24) | ((uint32_t)serNum[1] << 16) |
-                     ((uint32_t)serNum[2] << 8) | (uint32_t)serNum[3];
-
-    rc522SelectTag(RC522_1, serNum);
-
-    // find place in table
     for (i = 0; i < MAX_RFID_ENTRIES; i++) {
-        if (rfidTable[i].hasData &&
-            rfidTable[i].id == newId) { // already exists in table
-            --rfidCount;
+        if (rfidTable[i].hasData && rfidTable[i].id == selectedId) {
             entryIdx = (int8_t)i;
             break;
         }
     }
-    if (entryIdx == -1) {
-        for (i = 0; i < MAX_RFID_ENTRIES; i++) { // empty spot
-            if (!rfidTable[i].hasData) {
-                entryIdx = (int8_t)i;
-                break;
-            }
-        }
-    }
-    if (entryIdx == -1) {
-        rc522HaltA(RC522_1);
-        return -2; // table full
-    }
+    if (entryIdx == -1) return 1;
 
-    // populate table
-    rfidTable[entryIdx].id = newId;
-    rfidTable[entryIdx].uidLength = 5; // 4 UID + 1 BCC
-    for (i = 0; i < 5; i++) {
-        rfidTable[entryIdx].uid[i] = serNum[i];
-    }
+    uint8_t status;
+    uint8_t atqa[2];
+    uint8_t serNum[5];
 
-    // Copy name safely
-    char name[16] = "key ";
-    char buf[3] = {0};
-    sprintf(buf,"%d", rfidCount);
-    strcat(name,buf);
+    status = rc522Request(RC522_2, PICC_REQA, atqa);
+    if (status != STATUS_OK) return 2;
 
-    for (i = 0; i < 29 && name[i] != '\0'; i++) {
-        rfidTable[entryIdx].name[i] = name[i];
-    }
-    rfidTable[entryIdx].name[i] = '\0';
+    status = rc522Anticoll(RC522_2, serNum);
+    if (status != STATUS_OK) return 3;
 
-    // MIFARE Classic 1K card (used in key fobs)
-    // 16 sectors with 4 blocks, 16 bytes each
-    uint8_t blockCount = 0;
+    rc522SelectTag(RC522_2, serNum);
 
-    for (j = 0; j < 64 && blockCount < MAX_RFID_BLOCKS; j++) {
-        uint8_t sector = j / 4;
-        uint8_t blockInSector = j % 4;
+    uint8_t lastSector = 0xFF;
+    for (i = 0; i < rfidTable[entryIdx].blockCount; i++) {
+        uint8_t blockAddr = rfidTable[entryIdx].blocks[i].addr;
+        uint8_t sector = blockAddr / 4;
 
-        // Re-authenticate whenever we enter a new sector
+        if (blockAddr == 0) continue;
+
         if (sector != lastSector) {
-            status = rc522Auth(RC522_1, PICC_MF_AUTH_KEY_A, j,
+            status = rc522Auth(RC522_2, PICC_MF_AUTH_KEY_A, blockAddr,
                                (uint8_t *)defaultKeyA, serNum);
             if (status != STATUS_OK) {
-                // Auth failed => skip the rest of this sector
-                j += (3u - blockInSector); // advance to last block of sector
-                continue;
+                rc522StopCrypto(RC522_2);
+                rc522HaltA(RC522_2);
+                return 4;
             }
             lastSector = sector;
         }
 
-        // Block 3 of every sector is the sector trailer (keys + access bits)
-        if (blockInSector == 3) {
-            continue;
-        }
-
-        // Read 16-byte block (rawBlock[0..15] = data, [16..17] = CRC)
-        status = rc522ReadBlock(RC522_1, j, rawBlock);
-        if (status == STATUS_OK) {
-            rfidTable[entryIdx].blocks[blockCount].addr = j;
-            for (i = 0; i < BLOCK_SIZE; i++) {
-                rfidTable[entryIdx].blocks[blockCount].data[i] = rawBlock[i];
-            }
-            blockCount++;
+        status = rc522WriteBlock(RC522_2, blockAddr,
+                                 rfidTable[entryIdx].blocks[i].data);
+        if (status != STATUS_OK) {
+            rc522StopCrypto(RC522_2);
+            rc522HaltA(RC522_2);
+            return 5;
         }
     }
 
-    rfidTable[entryIdx].blockCount = blockCount;
-    rfidTable[entryIdx].hasData = 1;
-    if (rfidCount < MAX_RFID_ENTRIES) {
-        rfidCount++;
-    }
-
-    rc522StopCrypto(RC522_1);
-    rc522HaltA(RC522_1);
-
-    return entryIdx;
+    rc522StopCrypto(RC522_2);
+    rc522HaltA(RC522_2);
+    return STATUS_OK;
 }
 
 /*
