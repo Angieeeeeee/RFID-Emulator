@@ -37,21 +37,20 @@ void initRC() {
     initSystemClockTo40Mhz();
 
     enablePort(PORTD);
-    enablePort(PORTB);
-    enablePort(PORTF);
+    enablePort(PORTB);          // for RC522_2's CS pin only
     _delay_cycles(3);
 
-    // init SPI
+    // Initialize SSI1 — used by BOTH readers. SSI2 is intentionally
+    // left disabled because R9/R10 short PD0<->PB6 and PD1<->PB7,
+    // and any SSI2 driver activity fights RC522_1's CS line.
     initSpi1();
-    disablePinPulldown(PORTD, 2);   // MISO must float, then SSI takes over
+    disablePinPulldown(PORTD, 2);
     disablePinPullup(PORTD, 2);
-
-    initSpi2();
-    disablePinPulldown(PORTB, 6);   // MISO must float, then SSI takes over
-    disablePinPullup(PORTB, 6);
-
     setSpi1BaudRate(100000, 40000000);
-    setSpi2BaudRate(100000, 40000000);
+
+    // RC522_2's CS is a plain GPIO output, idle high.
+    selectPinPushPullOutput(RC2FSS);
+    setPinValue(RC2FSS, 1);
 
     rc522Init(RC522_1);
     rc522Init(RC522_2);
@@ -166,23 +165,24 @@ static uint8_t spi2Transfer(uint8_t txByte) {
 }
 
 void rcWriteReg(uint8_t module, uint8_t reg, uint8_t val) {
-    uint8_t addr = (reg << 1) & 0x7E; // when bit 7 is 0, write. bit 0 is 0
+    uint8_t addr = (reg << 1) & 0x7E;
+
+    while (SSI1_SR_R & SSI_SR_RNE) { (void)SSI1_DR_R; }
 
     if (module == RC522_1) {
-        while (SSI1_SR_R & SSI_SR_RNE) { (void)SSI1_DR_R; }
-        setPinValue(RC1FSS, 0); // CS assert
-        waitMicrosecond(1);
-        spi1Transfer(addr);     // address phase  (RX byte discarded)
-        spi1Transfer(val);      // data phase     (RX byte discarded)
-        waitMicrosecond(1);
-        setPinValue(RC1FSS, 1); // CS deassert
+        setPinValue(RC1FSS, 0);
     } else {
-        while (SSI2_SR_R & SSI_SR_RNE) { (void)SSI2_DR_R; }
         setPinValue(RC2FSS, 0);
-        waitMicrosecond(1);
-        spi2Transfer(addr);
-        spi2Transfer(val);
-        waitMicrosecond(1);
+    }
+    waitMicrosecond(1);
+
+    spi1Transfer(addr);
+    spi1Transfer(val);
+
+    waitMicrosecond(1);
+    if (module == RC522_1) {
+        setPinValue(RC1FSS, 1);
+    } else {
         setPinValue(RC2FSS, 1);
     }
 }
@@ -191,21 +191,22 @@ uint8_t rcReadReg(uint8_t module, uint8_t reg) {
     uint8_t addr = ((reg << 1) & 0x7E) | 0x80;
     uint8_t val;
 
+    while (SSI1_SR_R & SSI_SR_RNE) { (void)SSI1_DR_R; }
+
     if (module == RC522_1) {
-        while (SSI1_SR_R & SSI_SR_RNE) { (void)SSI1_DR_R; }
         setPinValue(RC1FSS, 0);
-        waitMicrosecond(1);
-        spi1Transfer(addr);
-        val = spi1Transfer(0x00);
-        waitMicrosecond(1);
+    } else {
+        setPinValue(RC2FSS, 0);
+    }
+    waitMicrosecond(1);
+
+    spi1Transfer(addr);
+    val = spi1Transfer(0x00);
+
+    waitMicrosecond(1);
+    if (module == RC522_1) {
         setPinValue(RC1FSS, 1);
     } else {
-        while (SSI2_SR_R & SSI_SR_RNE) { (void)SSI2_DR_R; }
-        setPinValue(RC2FSS, 0);
-        waitMicrosecond(1);
-        spi2Transfer(addr);
-        val = spi2Transfer(0x00);
-        waitMicrosecond(1);
         setPinValue(RC2FSS, 1);
     }
     return val;
