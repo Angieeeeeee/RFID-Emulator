@@ -291,13 +291,29 @@ static void key_menu(MenuAction action) {
     switch (action) {
         case ACT_WRITE: {
             clear_screen();
-            ST7735_SetCursor(4, 5);
-            ST7735_OutString("Writing...");
-            waitMicrosecond(1e6);
-            uint8_t status = writeRFID(rfidTable[idx].id);
+            ST7735_SetCursor(2, 4);
+            ST7735_OutString("Place target on");
+            ST7735_SetCursor(2, 5);
+            ST7735_OutString("writer, then OK");
+            wait_for_ok();
+        
             clear_screen();
             ST7735_SetCursor(4, 5);
-            ST7735_OutString(status == STATUS_OK ? "Write OK" : "Write Failed");
+            ST7735_OutString("Writing...");
+            waitMicrosecond(5e5);
+        
+            uint8_t status = writeRFID(rfidTable[idx].id);
+        
+            clear_screen();
+            if (status == STATUS_OK) {
+                ST7735_SetCursor(4, 5);
+                ST7735_OutString("Write OK");
+            } else {
+                char buf[20];
+                sprintf(buf, "Write Fail: %d", status);
+                ST7735_SetCursor(2, 5);
+                ST7735_OutString(buf);
+            }
             waitMicrosecond(2e6);
             break;
         }
