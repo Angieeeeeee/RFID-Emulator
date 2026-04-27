@@ -339,6 +339,18 @@ int main(void) {
     selectPinDigitalInput(PORTC, OK_PB);
 
     initRC();
+    
+    uint8_t v2 = rc522GetVersion(RC522_2);
+    char vbuf[20];
+    sprintf(vbuf, "RC2 ver: %02X", v2);
+    Output_Init();
+    ST7735_SetRotation(1);
+    ST7735_SetTextColor(ST7735_GREEN);
+    clear_screen();
+    ST7735_SetCursor(1, 5);
+    ST7735_OutString(vbuf);
+    waitMicrosecond(3e6);
+    
     Output_Init();
     ST7735_SetRotation(1);
     ST7735_SetTextColor(ST7735_GREEN);
