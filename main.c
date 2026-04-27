@@ -136,10 +136,6 @@ void Read_Key(void) {
         ST7735_SetCursor(2, 5);
         ST7735_OutString("No Tag Detected");
     } else {
-        // Replaced the original \n-terminated strings with explicit
-        // SetCursor calls — \n in this driver advances StY *and* paints
-        // a 21-space line at the new row, leaving the cursor in an
-        // unpredictable place.
         ST7735_SetCursor(5, 4);
         ST7735_OutString("No Space");
         ST7735_SetCursor(3, 6);
@@ -190,9 +186,6 @@ static int8_t key_menu_select(const char *title) {
     int8_t total_options = entry_count + 1;   // +1 for the Back row
     int8_t local_pos = 0;
 
-    // Initial render. Spacing of LIST_STEP=1 keeps the list inside the
-    // visible area even when the list is full (8 entries + Back = 9
-    // rows from y=2 to y=10).
     clear_screen();
     ST7735_SetCursor(3, TITLE_Y);
     ST7735_OutString(title);
@@ -296,14 +289,14 @@ static void key_menu(MenuAction action) {
             ST7735_SetCursor(2, 5);
             ST7735_OutString("writer, then OK");
             wait_for_ok();
-        
+
             clear_screen();
             ST7735_SetCursor(4, 5);
             ST7735_OutString("Writing...");
             waitMicrosecond(5e5);
-        
+
             uint8_t status = writeRFID(rfidTable[idx].id);
-        
+
             clear_screen();
             if (status == STATUS_OK) {
                 ST7735_SetCursor(4, 5);
@@ -355,22 +348,24 @@ int main(void) {
     selectPinDigitalInput(PORTC, OK_PB);
 
     initRC();
-    
-    uint8_t v2 = rc522GetVersion(RC522_2);
-    char vbuf[20];
-    sprintf(vbuf, "RC2 ver: %02X", v2);
+
     Output_Init();
     ST7735_SetRotation(1);
     ST7735_SetTextColor(ST7735_GREEN);
-    clear_screen();
-    ST7735_SetCursor(1, 5);
-    ST7735_OutString(vbuf);
-    waitMicrosecond(3e6);
-    
-    Output_Init();
-    ST7735_SetRotation(1);
-    ST7735_SetTextColor(ST7735_GREEN);
-    waitMicrosecond(1e6);
+    waitMicrosecond(5e5);
+
+    // One-time diagnostic: show RC522_2's silicon version on boot.
+    // Expect 0x91, 0x92, or 0x88 if SSI2 is working. 0xFF or 0x00
+    // means SSI2 isn't talking to RC522_2 (likely R9/R10 conflict).
+    {
+        uint8_t v2 = rc522GetVersion(RC522_2);
+        char vbuf[20];
+        sprintf(vbuf, "RC2 ver: %02X", v2);
+        clear_screen();
+        ST7735_SetCursor(1, 5);
+        ST7735_OutString(vbuf);
+        waitMicrosecond(3e6);
+    }
 
 reset:
     clear_screen();
